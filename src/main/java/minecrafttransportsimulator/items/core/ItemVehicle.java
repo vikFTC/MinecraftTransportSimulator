@@ -5,8 +5,8 @@ import java.lang.reflect.Constructor;
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.baseclasses.VehicleAxisAlignedBB;
 import minecrafttransportsimulator.dataclasses.MTSRegistry;
-import minecrafttransportsimulator.dataclasses.PackVehicleObject.PackCollisionBox;
-import minecrafttransportsimulator.dataclasses.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packloading.PackVehicleObject.PackCollisionBox;
+import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered.VehicleInstrument;
@@ -22,15 +22,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class ItemVehicle extends Item{
-	public final String vehicleName;
-	
-	public ItemVehicle(String vehicleName){
-		super();
-		this.vehicleName = vehicleName;
-		this.setUnlocalizedName(vehicleName.replace(":", "."));
-		this.setCreativeTab(MTSRegistry.packTabs.get(vehicleName.substring(0, vehicleName.indexOf(':'))));
-	}
+public class ItemVehicle extends AItemPackComponent{
 	
 	@Override
 	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){

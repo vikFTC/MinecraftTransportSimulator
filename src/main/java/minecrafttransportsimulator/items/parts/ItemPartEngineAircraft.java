@@ -2,17 +2,13 @@ package minecrafttransportsimulator.items.parts;
 
 import java.util.List;
 
-import minecrafttransportsimulator.dataclasses.PackPartObject;
+import minecrafttransportsimulator.packloading.PackPartObject;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public final class ItemPartEngineAircraft extends AItemPartEngine{
-	
-	public ItemPartEngineAircraft(String partName){
-		super(partName);
-	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)

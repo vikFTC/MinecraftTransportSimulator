@@ -1,4 +1,4 @@
-package minecrafttransportsimulator.dataclasses;
+package minecrafttransportsimulator.packloading;
 
 public class PackDecorObject{
 	public DecorGeneralConfig general;

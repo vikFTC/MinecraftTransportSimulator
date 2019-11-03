@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import minecrafttransportsimulator.dataclasses.PackDecorObject;
+import minecrafttransportsimulator.packloading.PackDecorObject;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;

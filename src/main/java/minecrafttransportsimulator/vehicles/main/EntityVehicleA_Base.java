@@ -9,10 +9,10 @@ import java.util.Map;
 import com.google.common.collect.ImmutableList;
 
 import minecrafttransportsimulator.MTS;
-import minecrafttransportsimulator.dataclasses.PackVehicleObject;
-import minecrafttransportsimulator.dataclasses.PackVehicleObject.PackPart;
 import minecrafttransportsimulator.packets.vehicles.PacketVehicleClientInit;
 import minecrafttransportsimulator.packets.vehicles.PacketVehicleClientPartRemoval;
+import minecrafttransportsimulator.packloading.PackVehicleObject;
+import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import minecrafttransportsimulator.vehicles.parts.APart;
 import net.minecraft.entity.Entity;

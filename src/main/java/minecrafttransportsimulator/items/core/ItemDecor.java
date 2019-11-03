@@ -2,10 +2,9 @@ package minecrafttransportsimulator.items.core;
 
 import minecrafttransportsimulator.blocks.core.TileEntityDecor;
 import minecrafttransportsimulator.dataclasses.MTSRegistry;
-import minecrafttransportsimulator.dataclasses.PackDecorObject;
+import minecrafttransportsimulator.packloading.PackDecorObject;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -13,15 +12,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class ItemDecor extends Item{
-	public final String decorName;
-	
-	public ItemDecor(String decorName){
-		super();
-		this.decorName = decorName;
-		this.setUnlocalizedName(decorName.replace(":", "."));
-		this.setCreativeTab(MTSRegistry.packTabs.get(decorName.substring(0, decorName.indexOf(':'))));
-	}
+public class ItemDecor extends AItemPackComponent{
 	
 	@Override
 	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){

@@ -4,9 +4,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import minecrafttransportsimulator.dataclasses.PackPartObject;
-import minecrafttransportsimulator.dataclasses.PackVehicleObject.PackPart;
-import minecrafttransportsimulator.systems.PackParserSystem;
+import minecrafttransportsimulator.packloading.PackLoader;
+import minecrafttransportsimulator.packloading.PackPartObject;
+import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
 import minecrafttransportsimulator.vehicles.parts.APartEngine;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -21,14 +21,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public abstract class AItemPartEngine extends AItemPart{
 	
-	public AItemPartEngine(String partName){
-		super(partName);
-		this.hasSubtypes = true;
-	}
-	
 	@Override
 	public boolean isPartValidForPackDef(PackPart packPart){
-		float fuelConsumption = PackParserSystem.getPartPack(partName).engine.fuelConsumption;
+		float fuelConsumption = PackLoader.partPackMap.get(component).engine.fuelConsumption;
 		return packPart.minValue <= fuelConsumption && packPart.maxValue >= fuelConsumption ? super.isPartValidForPackDef(packPart) : false;
 	}
 	
@@ -50,7 +45,7 @@ public abstract class AItemPartEngine extends AItemPart{
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltipLines, ITooltipFlag flagIn){
 		NBTTagCompound stackTag = stack.getTagCompound();
-		PackPartObject pack = PackParserSystem.getPartPack(((AItemPartEngine) stack.getItem()).partName); 
+		PackPartObject pack = PackLoader.partPackMap.get(component); 
 		
 		if(stackTag != null && stackTag.getBoolean("isCreative")){
 			tooltipLines.add(TextFormatting.DARK_PURPLE + I18n.format("info.item.engine.creative"));

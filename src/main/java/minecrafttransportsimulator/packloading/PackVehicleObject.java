@@ -1,4 +1,4 @@
-package minecrafttransportsimulator.dataclasses;
+package minecrafttransportsimulator.packloading;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,8 +3,8 @@ package minecrafttransportsimulator.rendering;
 import org.lwjgl.opengl.GL11;
 
 import minecrafttransportsimulator.dataclasses.MTSControls.Controls;
-import minecrafttransportsimulator.dataclasses.PackVehicleObject.PackControl;
-import minecrafttransportsimulator.dataclasses.PackVehicleObject.PackInstrument;
+import minecrafttransportsimulator.packloading.PackVehicleObject.PackControl;
+import minecrafttransportsimulator.packloading.PackVehicleObject.PackInstrument;
 import minecrafttransportsimulator.systems.CameraSystem;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered.VehicleInstrument;

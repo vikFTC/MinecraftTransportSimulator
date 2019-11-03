@@ -8,7 +8,7 @@ import org.lwjgl.opengl.GL11;
 
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.blocks.pole.TileEntityPoleSign;
-import minecrafttransportsimulator.dataclasses.PackSignObject;
+import minecrafttransportsimulator.packloading.PackSignObject;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;

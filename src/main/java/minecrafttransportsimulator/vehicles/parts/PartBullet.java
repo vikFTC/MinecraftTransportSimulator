@@ -5,8 +5,8 @@ import java.util.List;
 
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.dataclasses.MTSRegistry;
-import minecrafttransportsimulator.dataclasses.PackPartObject.PartBulletConfig;
 import minecrafttransportsimulator.packets.general.PacketBulletHit;
+import minecrafttransportsimulator.packloading.PackPartObject.PartBulletConfig;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import minecrafttransportsimulator.systems.RotationSystem;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;

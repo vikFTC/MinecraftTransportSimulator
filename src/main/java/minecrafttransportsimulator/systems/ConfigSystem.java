@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import minecrafttransportsimulator.dataclasses.PackPartObject;
+import minecrafttransportsimulator.packloading.PackPartObject;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 

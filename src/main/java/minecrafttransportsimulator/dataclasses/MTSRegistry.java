@@ -107,21 +107,6 @@ public final class MTSRegistry{
 	/**All registered core items are stored in this list as they are added.  Used to sort items in the creative tab.**/
 	public static List<Item> itemList = new ArrayList<Item>();
 	
-	/**Maps vehicle item names to items.  All vehicle items for all packs will be populated here.*/
-	public static Map<String, ItemVehicle> vehicleItemMap = new LinkedHashMap<String, ItemVehicle>();
-	
-	/**Maps part item names to items.  All part items for all packs will be populated here.*/
-	public static Map<String, AItemPart> partItemMap = new LinkedHashMap<String, AItemPart>();
-	
-	/**Maps instrument item names to items.  All instrument items for all packs will be populated here.*/
-	public static Map<String, ItemInstrument> instrumentItemMap = new LinkedHashMap<String, ItemInstrument>();
-	
-	/**Maps decor item names to items.  All decor items for all packs will be populated here.*/
-	public static Map<String, ItemDecor> decorItemMap = new LinkedHashMap<String, ItemDecor>();
-	
-	/**Maps item item names to items.  All item items for all packs will be populated here.*/
-	public static Map<String, ItemItem> itemItemMap = new LinkedHashMap<String, ItemItem>();
-	
 	/**Maps rotatable blocks to their items.  Used to return the correct item when they are broken.*/
 	public static Map<BlockRotatable, ItemBlockRotatable> rotatableItemMap = new LinkedHashMap<BlockRotatable, ItemBlockRotatable>();
 	

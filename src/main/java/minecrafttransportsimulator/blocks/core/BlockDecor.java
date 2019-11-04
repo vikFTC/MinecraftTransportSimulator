@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import minecrafttransportsimulator.packloading.PackDecorObject;
+import minecrafttransportsimulator.packs.objects.PackObjectDecor;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
@@ -45,7 +45,7 @@ public class BlockDecor extends Block implements ITileEntityProvider{
     		if(this.regularAABB == null){
     			TileEntityDecor tile = ((TileEntityDecor) access.getTileEntity(pos));
     			if(tile != null){
-    				PackDecorObject pack = PackParserSystem.getDecor(tile.decorName);
+    				PackObjectDecor pack = PackParserSystem.getDecor(tile.decorName);
     				if(pack != null){
     		    		this.regularAABB = new AxisAlignedBB(0.5F - pack.general.width/2F, 0, 0.5F - pack.general.depth/2F, 0.5F + pack.general.width/2F, pack.general.height, 0.5F +  pack.general.depth/2F);
     				}
@@ -57,7 +57,7 @@ public class BlockDecor extends Block implements ITileEntityProvider{
     		if(this.regularAABB == null){
     			TileEntityDecor tile = ((TileEntityDecor) access.getTileEntity(pos));
     			if(tile != null){
-    				PackDecorObject pack = PackParserSystem.getDecor(tile.decorName);
+    				PackObjectDecor pack = PackParserSystem.getDecor(tile.decorName);
     				if(pack != null){
     					this.regularAABB = new AxisAlignedBB(0.5F - pack.general.width/2F, 0, 0.5F - pack.general.depth/2F, 0.5F + pack.general.width/2F, pack.general.height, 0.5F +  pack.general.depth/2F);
     					this.rotatedAABB = !this.isOriented ? regularAABB : new AxisAlignedBB(0.5F - pack.general.depth/2F, 0, 0.5F - pack.general.width/2F, 0.5F + pack.general.depth/2F, pack.general.height, 0.5F +  pack.general.width/2F);
@@ -86,7 +86,7 @@ public class BlockDecor extends Block implements ITileEntityProvider{
 			if(this.regularAABB == null){
     			TileEntityDecor tile = ((TileEntityDecor) world.getTileEntity(pos));
     			if(tile != null){
-    				PackDecorObject pack = PackParserSystem.getDecor(tile.decorName);
+    				PackObjectDecor pack = PackParserSystem.getDecor(tile.decorName);
     				if(pack != null){
     					this.regularAABB = new AxisAlignedBB(0.5F - pack.general.width/2F, 0, 0.5F - pack.general.depth/2F, 0.5F + pack.general.width/2F, pack.general.height, 0.5F +  pack.general.depth/2F);
     					this.rotatedAABB = !this.isOriented ? regularAABB : new AxisAlignedBB(0.5F - pack.general.depth/2F, 0, 0.5F - pack.general.width/2F, 0.5F + pack.general.depth/2F, pack.general.height, 0.5F +  pack.general.width/2F);

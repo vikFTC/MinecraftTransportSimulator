@@ -7,11 +7,7 @@ import minecrafttransportsimulator.blocks.core.TileEntityDecor;
 import minecrafttransportsimulator.blocks.core.TileEntityFuelPump;
 import minecrafttransportsimulator.blocks.pole.TileEntityPoleSign;
 import minecrafttransportsimulator.blocks.pole.TileEntityPoleWallConnector;
-import minecrafttransportsimulator.items.core.ItemDecor;
-import minecrafttransportsimulator.items.core.ItemInstrument;
-import minecrafttransportsimulator.items.core.ItemItem;
-import minecrafttransportsimulator.items.core.ItemVehicle;
-import minecrafttransportsimulator.items.parts.AItemPart;
+import minecrafttransportsimulator.packs.PackLoader;
 import minecrafttransportsimulator.rendering.RenderVehicle;
 import minecrafttransportsimulator.rendering.blockrenders.RenderDecor;
 import minecrafttransportsimulator.rendering.blockrenders.RenderFuelPump;
@@ -55,7 +51,7 @@ public final class MTSRegistryClient{
 		for(Field field : MTSRegistry.class.getFields()){
 			if(field.getType().equals(Item.class)){
 				try{
-					registerCoreItemRender((Item) field.get(null));
+					registerItemRender((Item) field.get(null));
 				}catch(Exception e){
 					e.printStackTrace();
 				}
@@ -63,31 +59,13 @@ public final class MTSRegistryClient{
 		}
 		
 		//Now register items for the packs.
-		for(ItemVehicle vehicleItem : MTSRegistry.vehicleItemMap.values()){
-			registerPackItemRender(vehicleItem, vehicleItem.vehicleName, "vehicles");
-		}
-		for(AItemPart partItem : MTSRegistry.partItemMap.values()){
-			registerPackItemRender(partItem, partItem.partName, "parts");
-		}
-		for(ItemInstrument instrumentItem : MTSRegistry.instrumentItemMap.values()){
-			registerPackItemRender(instrumentItem, instrumentItem.instrumentName, "instruments");
-		}
-		for(ItemDecor decorItem : MTSRegistry.decorItemMap.values()){
-			registerPackItemRender(decorItem, decorItem.decorName, "decors");
-		}
-		for(ItemItem itemItem : MTSRegistry.itemItemMap.values()){
-			registerPackItemRender(itemItem, itemItem.itemName, "items");
+		for(Item packItem : PackLoader.getAllPackItems()){
+			registerItemRender(packItem);
 		}
 	}
 	
-	private static void registerCoreItemRender(Item item){
+	private static void registerItemRender(Item item){
 		ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(MTS.MODID + ":" + item.getRegistryName().getResourcePath(), "inventory"));
-	}
-	
-	private static void registerPackItemRender(Item item, String wholeName, String renderFolder){
-		String itemModID = wholeName.substring(0, wholeName.indexOf(':'));
-		String itemName = wholeName.substring(wholeName.indexOf(':') + 1);
-		ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(itemModID + ":" + renderFolder + "/" + itemName, "inventory"));
 	}
 	
 	private static final IRenderFactory<EntityVehicleE_Powered> MTSRenderFactory = new IRenderFactory<EntityVehicleE_Powered>(){

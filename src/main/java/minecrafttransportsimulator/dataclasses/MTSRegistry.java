@@ -1,6 +1,5 @@
 package minecrafttransportsimulator.dataclasses;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,26 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import minecrafttransportsimulator.MTS;
-import minecrafttransportsimulator.blocks.core.BlockDecor;
 import minecrafttransportsimulator.blocks.core.BlockRotatable;
-import minecrafttransportsimulator.blocks.pole.BlockPoleAttachment;
-import minecrafttransportsimulator.blocks.pole.BlockPoleNormal;
-import minecrafttransportsimulator.blocks.pole.BlockPoleSign;
-import minecrafttransportsimulator.blocks.pole.BlockPoleWallConnector;
-import minecrafttransportsimulator.items.blocks.ItemBlockBench;
-import minecrafttransportsimulator.items.blocks.ItemBlockFuelPump;
 import minecrafttransportsimulator.items.blocks.ItemBlockRotatable;
-import minecrafttransportsimulator.items.blocks.ItemBlockTrafficSignalController;
-import minecrafttransportsimulator.items.core.ItemDecor;
-import minecrafttransportsimulator.items.core.ItemInstrument;
-import minecrafttransportsimulator.items.core.ItemItem;
-import minecrafttransportsimulator.items.core.ItemJerrycan;
-import minecrafttransportsimulator.items.core.ItemJumperCable;
-import minecrafttransportsimulator.items.core.ItemKey;
-import minecrafttransportsimulator.items.core.ItemManual;
-import minecrafttransportsimulator.items.core.ItemVehicle;
 import minecrafttransportsimulator.items.core.ItemWrench;
-import minecrafttransportsimulator.items.parts.AItemPart;
 import minecrafttransportsimulator.packets.control.AileronPacket;
 import minecrafttransportsimulator.packets.control.BrakePacket;
 import minecrafttransportsimulator.packets.control.ElevatorPacket;
@@ -73,7 +55,6 @@ import minecrafttransportsimulator.packets.vehicles.PacketVehicleKey;
 import minecrafttransportsimulator.packets.vehicles.PacketVehicleNameTag;
 import minecrafttransportsimulator.packets.vehicles.PacketVehicleWindowBreak;
 import minecrafttransportsimulator.packets.vehicles.PacketVehicleWindowFix;
-import minecrafttransportsimulator.systems.PackParserSystem;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleG_Blimp;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleG_Boat;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleG_Car;
@@ -81,7 +62,6 @@ import minecrafttransportsimulator.vehicles.main.EntityVehicleG_Plane;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
@@ -95,10 +75,9 @@ import net.minecraftforge.fml.relauncher.Side;
 
 /**Main registry class.  This class should be referenced by any class looking for
  * MTS items or blocks.  Adding new items and blocks is a simple as adding them
- * as a field; the init method automatically registers all items and blocks in the class
- * and orders them according to the order in which they were declared.
- * This calls the {@link PackParserSystem} to register any custom vehicles and parts
- * that were loaded by packs.
+ * as a field; the {@link mts_to_mc.interfaces.RegistryInterface} will handle the rest.
+ * All entries will be ordered according to the order in which they were declared,
+ * so use this to sort your entries.
  * 
  * @author don_bruce
  */
@@ -117,46 +96,46 @@ public final class MTSRegistry{
 	public static final Map<String, CreativeTabPack> packTabs = new HashMap<String, CreativeTabPack>();
 
 	//Vehicle interaction items.
-	public static final Item manual = new ItemManual().setCreativeTab(coreTab);
+	//public static final Item manual = new ItemManual().setCreativeTab(coreTab);
 	public static final Item wrench = new ItemWrench().setCreativeTab(coreTab);
-	public static final Item key = new ItemKey().setCreativeTab(coreTab);
-	public static final Item jumperCable = new ItemJumperCable().setCreativeTab(coreTab);
-	public static final Item jerrycan = new ItemJerrycan().setCreativeTab(coreTab);
+	//public static final Item key = new ItemKey().setCreativeTab(coreTab);
+	//public static final Item jumperCable = new ItemJumperCable().setCreativeTab(coreTab);
+	//public static final Item jerrycan = new ItemJerrycan().setCreativeTab(coreTab);
 	
 	//Crafting benches.
-	public static final Item vehicleBench = new ItemBlockBench("plane", "car", "blimp", "boat").createBlocks();
-	public static final Item propellerBench = new ItemBlockBench("propeller").createBlocks();
-	public static final Item engineBench = new ItemBlockBench("engine_aircraft", "engine_jet", "engine_car", "engine_boat").createBlocks();
-	public static final Item wheelBench = new ItemBlockBench("wheel", "skid", "pontoon", "tread").createBlocks();
-	public static final Item seatBench = new ItemBlockBench("seat", "crate", "barrel", "crafting_table", "furnace", "brewing_stand").createBlocks();
-	public static final Item gunBench = new ItemBlockBench("gun_fixed", "gun_tripod").createBlocks();
-	public static final Item customBench = new ItemBlockBench("custom").createBlocks();
-	public static final Item instrumentBench = new ItemBlockBench("instrument").createBlocks();
-	public static final Item componentBench = new ItemBlockBench("item").createBlocks();
+	//public static final Item vehicleBench = new ItemBlockBench("plane", "car", "blimp", "boat").createBlocks();
+	//public static final Item propellerBench = new ItemBlockBench("propeller").createBlocks();
+	//public static final Item engineBench = new ItemBlockBench("engine_aircraft", "engine_jet", "engine_car", "engine_boat").createBlocks();
+	//public static final Item wheelBench = new ItemBlockBench("wheel", "skid", "pontoon", "tread").createBlocks();
+	//public static final Item seatBench = new ItemBlockBench("seat", "crate", "barrel", "crafting_table", "furnace", "brewing_stand").createBlocks();
+	//public static final Item gunBench = new ItemBlockBench("gun_fixed", "gun_tripod").createBlocks();
+	//public static final Item customBench = new ItemBlockBench("custom").createBlocks();
+	//public static final Item instrumentBench = new ItemBlockBench("instrument").createBlocks();
+	//public static final Item componentBench = new ItemBlockBench("item").createBlocks();
 	
 	//Fuel pump.
-	public static final Item fuelPump = new ItemBlockFuelPump().createBlocks();
+	//public static final Item fuelPump = new ItemBlockFuelPump().createBlocks();
 	
 	//Traffic Controller
-	public static final Item trafficSignalController = new ItemBlockTrafficSignalController().createBlocks();
+	///public static final Item trafficSignalController = new ItemBlockTrafficSignalController().createBlocks();
 	
 	//Pole-based blocks.
-	public static final Block pole = new BlockPoleNormal(0.125F);
-	public static final Item itemBlockPole = new ItemBlock(pole);
-	public static final Block poleBase = new BlockPoleWallConnector(0.125F);
-	public static final Item itemBlockPoleBase = new ItemBlock(poleBase);
-	public static final Block trafficSignal = new BlockPoleAttachment(0.125F);
-	public static final Item itemBlockTrafficSignal = new ItemBlock(trafficSignal);
-	public static final Block streetLight = new BlockPoleAttachment(0.125F);
-	public static final Item itemBlockStreetLight = new ItemBlock(streetLight);
-	public static final Block trafficSign = new BlockPoleSign(0.125F);
-	public static final Item itemBlockTrafficSign = new ItemBlock(trafficSign);
+	//public static final Block pole = new BlockPoleNormal(0.125F);
+	//public static final Item itemBlockPole = new ItemBlock(pole);
+	//public static final Block poleBase = new BlockPoleWallConnector(0.125F);
+	//public static final Item itemBlockPoleBase = new ItemBlock(poleBase);
+	//public static final Block trafficSignal = new BlockPoleAttachment(0.125F);
+	//public static final Item itemBlockTrafficSignal = new ItemBlock(trafficSignal);
+	//public static final Block streetLight = new BlockPoleAttachment(0.125F);
+	//public static final Item itemBlockStreetLight = new ItemBlock(streetLight);
+	//public static final Block trafficSign = new BlockPoleSign(0.125F);
+	//public static final Item itemBlockTrafficSign = new ItemBlock(trafficSign);
 		
 	//Decor blocks.
-	public static final Block decorBasicDark = new BlockDecor(false, false);
-	public static final Block decorOrientedDark = new BlockDecor(true, false);
-	public static final Block decorBasicLight = new BlockDecor(false, true);
-	public static final Block decorOrientedLight = new BlockDecor(true, true);
+	//public static final Block decorBasicDark = new BlockDecor(false, false);
+	//public static final Block decorOrientedDark = new BlockDecor(true, false);
+	//public static final Block decorBasicLight = new BlockDecor(false, true);
+	//public static final Block decorOrientedLight = new BlockDecor(true, true);
 	
 	//Counters for registry systems.
 	private static int entityNumber = 0;
@@ -167,40 +146,6 @@ public final class MTSRegistry{
 	public static void init(){
 		initEntities();
 		initPackets();
-	}
-	
-	/**
-	 * This is called by packs to query what items they have registered.
-	 * Used to allow packs to register their own items after core mod processing.
-	 */
-	public static List<Item> getItemsForPack(String modID){
-		List<Item> packItems = new ArrayList<Item>();
-		for(ItemVehicle item : vehicleItemMap.values()){
-			if(item.vehicleName.startsWith(modID)){
-				packItems.add(item);
-			}
-		}
-		for(AItemPart item : partItemMap.values()){
-			if(item.partName.startsWith(modID)){
-				packItems.add(item);
-			}
-		}
-		for(ItemInstrument item : instrumentItemMap.values()){
-			if(item.instrumentName.startsWith(modID)){
-				packItems.add(item);
-			}
-		}
-		for(ItemDecor item : decorItemMap.values()){
-			if(item.decorName.startsWith(modID)){
-				packItems.add(item);
-			}
-		}
-		for(ItemItem item : itemItemMap.values()){
-			if(item.itemName.startsWith(modID)){
-				packItems.add(item);
-			}
-		}
-		return packItems;
 	}
 	
 	/**
@@ -249,75 +194,6 @@ public final class MTSRegistry{
 					e.printStackTrace();
 				}
 			}
-		}
-	}
-	
-	/**
-	 * Registers all items (and itemblocks) present in this class.
-	 * Does not register any items from packs as Forge doesn't like us
-	 * registering pack-mod prefixed items from the core class.
-	 * We can, however, add them to the appropriate maps pending the registration
-	 * on the pack side.  That way all the pack has to do is set the
-	 * registry name of an item and register it, which doesn't involve
-	 * anything complicated.
-	 */
-	@SubscribeEvent
-	public static void registerItems(RegistryEvent.Register<Item> event){
-		//First register all core items.
-		for(Field field : MTSRegistry.class.getFields()){
-			if(field.getType().equals(Item.class)){
-				try{
-					Item item = (Item) field.get(null);
-					String name = field.getName().toLowerCase();
-					if(!name.startsWith("itemblock")){
-						event.getRegistry().register(item.setRegistryName(name).setUnlocalizedName(name));
-						MTSRegistry.itemList.add(item);
-					}else{
-						name = name.substring("itemblock".length());
-						event.getRegistry().register(item.setRegistryName(name).setUnlocalizedName(name));
-						MTSRegistry.itemList.add(item);
-					}
-				}catch(Exception e){
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		
-		//Next add multipart items to the lists and creative tabs.
-		for(String multipartName : PackParserSystem.getAllVehiclePackNames()){
-			ItemVehicle itemMultipart = new ItemVehicle(multipartName);
-			vehicleItemMap.put(multipartName, itemMultipart);
-		}
-		
-		//Now add part items to the lists.
-		for(String partName : PackParserSystem.getAllPartPackNames()){
-			try{
-				Class<? extends AItemPart> itemClass = PackParserSystem.getPartItemClass(partName);
-				Constructor<? extends AItemPart> construct = itemClass.getConstructor(String.class);
-				AItemPart itemPart = construct.newInstance(partName);
-				partItemMap.put(partName, itemPart);
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-		}
-		
-		//Then add instrument items to the lists.
-		for(String instrumentName : PackParserSystem.getAllInstruments()){
-			ItemInstrument itemInstrument = new ItemInstrument(instrumentName);
-			instrumentItemMap.put(instrumentName, itemInstrument);
-		}
-		
-		//Next add decor items to the lists.
-		for(String decorName : PackParserSystem.getAllDecor()){
-			ItemDecor itemDecor = new ItemDecor(decorName);
-			decorItemMap.put(decorName, itemDecor);
-		}
-		
-		//Now add item items to the lists.
-		for(String itemName : PackParserSystem.getAllItems()){
-			ItemItem itemItem = new ItemItem(itemName);
-			itemItemMap.put(itemName, itemItem);
 		}
 	}
 

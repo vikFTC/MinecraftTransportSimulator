@@ -4,20 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import minecrafttransportsimulator.baseclasses.VehicleAxisAlignedBB;
-import minecrafttransportsimulator.dataclasses.MTSRegistry;
-import minecrafttransportsimulator.packloading.PackPartObject;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
-import minecrafttransportsimulator.systems.PackParserSystem;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.systems.RotationSystem;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleA_Base;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 
 /**This class is the base for all parts and should be
@@ -31,75 +26,56 @@ import net.minecraft.util.math.Vec3d;
  * @author don_bruce
  */
 public abstract class APart{	
-	/** Can a rider of this part send inputs to the vehicle this is a part of.*/
-	public final boolean isController;
-	/** Does this part rotate in-sync with the yaw changes of the vehicle.*/
-	public final boolean turnsWithSteer;
-	public final Vec3d offset;
+	//Static variables.  These are set at construction time and don't change.
 	public final EntityVehicleE_Powered vehicle;
-	public final String partName;
-	public final PackPartObject pack;
-	public final Vec3d partRotation;
-	public final boolean inverseMirroring;
-	public final boolean disableMirroring;
-	
-	/**The parent of this part, if this part is a sub-part of a part or an additional part for a vehicle.*/
+	public final PackComponentPart packComponent;
+	public final PackPart vehicleDefinition;
+	/*This is used to locate the part on the vehicle.  This may not be the current offset for some parts.*/
+	public final Vec3d baseOffset;
+	public final Vec3d baseRotation;
 	public final APart parentPart;
-	/**Children to this part.  Can be either additional parts or sub-parts.*/
 	public final List<APart> childParts = new ArrayList<APart>();
 	
-	public Vec3d partPos;
-	
-	private boolean isValid;
-	private ResourceLocation modelLocation;
-		
-	public APart(EntityVehicleE_Powered vehicle, PackPart packPart, String partName, NBTTagCompound dataTag){
-		this.vehicle = vehicle;
-		this.offset = new Vec3d(packPart.pos[0], packPart.pos[1], packPart.pos[2]);
-		this.partName = partName;
-		this.pack = PackParserSystem.getPartPack(partName);
-		this.partPos = RotationSystem.getRotatedPoint(this.offset, vehicle.rotationPitch, vehicle.rotationYaw, vehicle.rotationRoll).add(this.vehicle.getPositionVector());
-		this.partRotation = packPart.rot != null ? new Vec3d(packPart.rot[0], packPart.rot[1], packPart.rot[2]) : Vec3d.ZERO;
-		this.isController = packPart.isController;
-		this.turnsWithSteer = packPart.turnsWithSteer;
-		this.isValid = true;
-		this.inverseMirroring = packPart.inverseMirroring;
-		this.disableMirroring = pack.general.disableMirroring;
-		
-		//Check to see if we are an additional part to a part on our parent.
-		//If we are not valid due to us being fake, don't add ourselves.
-		if(this.isValid()){
-			for(PackPart parentPackPart : vehicle.pack.parts){
-				if(packPart.equals(parentPackPart.additionalPart)){
-					parentPart = vehicle.getPartAtLocation(parentPackPart.pos[0], parentPackPart.pos[1], parentPackPart.pos[2]);
-					parentPart.childParts.add(this);
-					return;
-				}
-			}
+	//Runtime variables.  Will change depending on part actions.
+	/*This is the current offset of the part.  May overlap with other parts!*/
+	public Vec3d currentOffset;
+	public Vec3d currentRotation;
+	public Vec3d currentPosition;
 			
-			//If we aren't an additional part, see if we are a sub-part.
-			for(APart part : vehicle.getVehicleParts()){
-				if(part.pack.subParts != null){
-					for(PackPart partSubPartPack : part.pack.subParts){
-						if((float) part.offset.x + partSubPartPack.pos[0] == (float) this.offset.x && (float) part.offset.y + partSubPartPack.pos[1] == (float) this.offset.y && (float) part.offset.z + partSubPartPack.pos[2] == (float) this.offset.z){
-							parentPart = part;
-							parentPart.childParts.add(this);
-							return;
-						}
+	public APart(EntityVehicleE_Powered vehicle, PackComponentPart packComponent, PackPart vehicleDefinition, NBTTagCompound dataTag){
+		this.vehicle = vehicle;
+		this.packComponent = packComponent;
+		this.vehicleDefinition = vehicleDefinition;
+		
+		this.baseOffset = new Vec3d(vehicleDefinition.pos[0], vehicleDefinition.pos[1], vehicleDefinition.pos[2]);
+		this.baseRotation = vehicleDefinition.rot != null ? new Vec3d(vehicleDefinition.rot[0], vehicleDefinition.rot[1], vehicleDefinition.rot[2]) : Vec3d.ZERO; 
+		
+		this.currentOffset = baseOffset;
+		this.currentRotation = baseRotation;
+		this.currentPosition = RotationSystem.getRotatedPoint(currentOffset, vehicle.rotationPitch, vehicle.rotationYaw, vehicle.rotationRoll).add(vehicle.getPositionVector()); 
+
+		//Check to see if we are an additional part to a part on our parent.
+		for(PackPart parentPackPart : vehicle.packComponent.pack.parts){
+			if(vehicleDefinition.equals(parentPackPart.additionalPart)){
+				parentPart = vehicle.getPartAtLocation(parentPackPart.pos[0], parentPackPart.pos[1], parentPackPart.pos[2]);
+				parentPart.childParts.add(this);
+				return;
+			}
+		}
+		
+		//If we aren't an additional part, see if we are a sub-part.
+		for(APart part : vehicle.parts){
+			if(part.packComponent.pack.subParts != null){
+				for(PackPart partSubPartPack : part.packComponent.pack.subParts){
+					if((float) part.baseOffset.x + partSubPartPack.pos[0] == (float) this.baseOffset.x && (float) part.baseOffset.y + partSubPartPack.pos[1] == (float) this.baseOffset.y && (float) part.baseOffset.z + partSubPartPack.pos[2] == (float) this.baseOffset.z){
+						parentPart = part;
+						parentPart.childParts.add(this);
+						return;
 					}
 				}
 			}
 		}
 		parentPart = null;
-	}
-	
-	/**Called right before this part is added to the vehicle.
-	 * Should this be false, the part will not be added.
-	 * This is also called during save operations to see if the part
-	 * is still valid and should be saved.
-	 */
-	public boolean isValid(){
-		return this.isValid;
 	}
 
 	/**Called when checking if this part can be interacted with.
@@ -111,7 +87,7 @@ public abstract class APart{
 		return false;
 	}
 	
-	/**Called when the vehicle sees this part being attacked.
+	/**Called when the vehicle sees this part being attacked.  Handle damage here.
 	 */
 	public void attackPart(DamageSource source, float damage){}
 	
@@ -119,32 +95,22 @@ public abstract class APart{
 	 * Use this for reactions that this part can take based on its surroundings if need be.
 	 */
 	public void updatePart(){
-		this.partPos = RotationSystem.getRotatedPoint(this.offset, vehicle.rotationPitch, vehicle.rotationYaw, vehicle.rotationRoll).add(vehicle.getPositionVector());
+		this.currentPosition = RotationSystem.getRotatedPoint(currentOffset, vehicle.rotationPitch, vehicle.rotationYaw, vehicle.rotationRoll).add(vehicle.getPositionVector());
 	}
 	
 	/**Called when the vehicle removes this part.
 	 * Allows for parts to trigger logic that happens when they are removed.
-	 * By default, this removes all sub-parts from the vehicle.
-	 * It also removes any extra parts as defined in the vehicle JSON.
-	 * Make sure to call the part's removal methods PRIOR to removing them
-	 * from their vehicle as they need to be set invalid to prevent
-	 * bad packets from arriving on the client.
+	 * The passed-in list is for additional parts that need to be removed,
+	 * such as child parts that are attached to this part.  Do NOT remove those
+	 * parts here as it will cause infinite loops.  This method is only to allow
+	 * the part to perform actions when it is removed.
 	 */
-	public void removePart(){
-		this.isValid = false;
-		while(childParts.size() > 0){
-			APart childPart = childParts.get(0);
-			childPart.removePart();
-			vehicle.removePart(childPart, false);
-			if(!vehicle.world.isRemote){
-				Item droppedItem = childPart.getItemForPart();
-				if(droppedItem != null){
-					ItemStack droppedStack = new ItemStack(droppedItem);
-					droppedStack.setTagCompound(childPart.getPartNBTTag());
-					vehicle.world.spawnEntity(new EntityItem(vehicle.world, childPart.partPos.x, childPart.partPos.y, childPart.partPos.z, droppedStack));
-				}
-			}
+	public void removePart(List<APart> partsToRemove){
+		for(APart childPart : childParts){
+			childPart.removePart(partsToRemove);
 		}
+		partsToRemove.addAll(childParts);
+		//Remove us from our parent, if we have one.
 		if(this.parentPart != null){
 			this.parentPart.childParts.remove(this);
 		}
@@ -167,31 +133,23 @@ public abstract class APart{
 	 * (either due to damage or other reasons) make this method return null.
 	 */
 	public Item getItemForPart(){
-		return MTSRegistry.partItemMap.get(this.partName);
+		return packComponent.item;
 	}
 	
 	/**Gets the location of the model for this part. 
 	 */
-	public ResourceLocation getModelLocation(){
-		if(modelLocation == null){
-			if(pack.general.modelName != null){
-				modelLocation = new ResourceLocation(partName.substring(0, partName.indexOf(':')), "objmodels/parts/" + pack.general.modelName + ".obj");
-			}else{
-				modelLocation = new ResourceLocation(partName.substring(0, partName.indexOf(':')), "objmodels/parts/" + partName.substring(partName.indexOf(':') + 1) + ".obj");
-			}
-		}
-		return modelLocation;
+	public String getModelLocation(){
+		return "objmodels/parts/" + (packComponent.pack.general.modelName != null ? packComponent.pack.general.modelName : packComponent.name) + ".obj"; 
 	}
 	
 	/**Gets the location of the texture for this part.
-	 * This can be changed for data-dependent part texture. 
 	 */
-	public ResourceLocation getTextureLocation(){
-		return new ResourceLocation(partName.substring(0, partName.indexOf(':')), "textures/parts/" + partName.substring(partName.indexOf(':') + 1) + ".png");
+	public String getTextureLocation(){
+		return packComponent.pack.general.useVehicleTexture ? "textures/vehicles/" + vehicle.packComponent.name + ".png" : "textures/parts/" + packComponent.name + ".png";
 	}
 	
 	public final VehicleAxisAlignedBB getAABBWithOffset(Vec3d boxOffset){
-		return new VehicleAxisAlignedBB(Vec3d.ZERO.equals(boxOffset) ? partPos : partPos.add(boxOffset), this.offset, this.getWidth(), this.getHeight(), false, false);
+		return new VehicleAxisAlignedBB(Vec3d.ZERO.equals(boxOffset) ? currentPosition : currentPosition.add(boxOffset), currentOffset, getWidth(), getHeight(), false, false);
 	}
 	
 	/**Gets the rotation vector for rendering.
@@ -210,6 +168,6 @@ public abstract class APart{
 	 * Can be given an offset vector to check for potential collisions. 
 	 */
 	public boolean isPartCollidingWithBlocks(Vec3d collisionOffset){
-		return !vehicle.world.getCollisionBoxes(null, this.getAABBWithOffset(collisionOffset)).isEmpty();
+		return !vehicle.world.getCollisionBoxes(null, getAABBWithOffset(collisionOffset)).isEmpty();
     }
 }

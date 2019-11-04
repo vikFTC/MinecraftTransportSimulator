@@ -2,6 +2,7 @@ package minecrafttransportsimulator.vehicles.main;
 
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.packets.control.SteeringPacket;
+import minecrafttransportsimulator.packs.components.PackComponentVehicle;
 import minecrafttransportsimulator.systems.RotationSystem;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.Vec3d;
@@ -36,8 +37,8 @@ public abstract class EntityVehicleF_Ground extends EntityVehicleE_Powered{
 		super(world);
 	}
 	
-	public EntityVehicleF_Ground(World world, float posX, float posY, float posZ, float rotation, String vehicleName){
-		super(world, posX, posY, posZ, rotation, vehicleName);
+	public EntityVehicleF_Ground(World world, float posX, float posY, float posZ, float rotation, PackComponentVehicle packComponent){
+		super(world, posX, posY, posZ, rotation, packComponent);
 	}
 	
 	@Override
@@ -77,10 +78,10 @@ public abstract class EntityVehicleF_Ground extends EntityVehicleE_Powered{
 				//We use a second hitchPos here to allow us to calculate the yaw angle we need to apply.
 				//If we don't, the vehicle has no clue of the orientation of the towed vehicle hitch and gets all jittery.
 				//This is because when the hitch and the hookup are at the same point, the dot product returns floating-point errors.
-				hookupOffset = new Vec3d(pack.motorized.hookupPos[0], pack.motorized.hookupPos[1], pack.motorized.hookupPos[2]);
+				hookupOffset = new Vec3d(packComponent.pack.motorized.hookupPos[0], packComponent.pack.motorized.hookupPos[1], packComponent.pack.motorized.hookupPos[2]);
 				hookupPos = RotationSystem.getRotatedPoint(hookupOffset, rotationPitch, rotationYaw, rotationRoll).add(getPositionVector());
-				hitchOffset = new Vec3d(towedByVehicle.pack.motorized.hitchPos[0], towedByVehicle.pack.motorized.hitchPos[1], towedByVehicle.pack.motorized.hitchPos[2]);
-				hitchOffset2 = new Vec3d(towedByVehicle.pack.motorized.hitchPos[0], towedByVehicle.pack.motorized.hitchPos[1], towedByVehicle.pack.motorized.hitchPos[2] + 0.5);
+				hitchOffset = new Vec3d(towedByVehicle.packComponent.pack.motorized.hitchPos[0], towedByVehicle.packComponent.pack.motorized.hitchPos[1], towedByVehicle.packComponent.pack.motorized.hitchPos[2]);
+				hitchOffset2 = new Vec3d(towedByVehicle.packComponent.pack.motorized.hitchPos[0], towedByVehicle.packComponent.pack.motorized.hitchPos[1], towedByVehicle.packComponent.pack.motorized.hitchPos[2] + 0.5);
 				hitchPos = RotationSystem.getRotatedPoint(hitchOffset, towedByVehicle.rotationPitch, towedByVehicle.rotationYaw, towedByVehicle.rotationRoll).add(towedByVehicle.getPositionVector());
 				hitchPos2 = RotationSystem.getRotatedPoint(hitchOffset2, towedByVehicle.rotationPitch, towedByVehicle.rotationYaw, towedByVehicle.rotationRoll).add(towedByVehicle.getPositionVector());
 				

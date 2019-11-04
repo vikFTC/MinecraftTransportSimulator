@@ -3,11 +3,10 @@ package minecrafttransportsimulator.rendering;
 import org.lwjgl.opengl.GL11;
 
 import minecrafttransportsimulator.dataclasses.MTSControls.Controls;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackControl;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackInstrument;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackControl;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackInstrument;
 import minecrafttransportsimulator.systems.CameraSystem;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
-import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered.VehicleInstrument;
 import net.minecraft.client.Minecraft;
 
 /**Main render class for the HUD.
@@ -31,12 +30,12 @@ public final class RenderHUD{
 		}
 
 		if(CameraSystem.hudMode == 3 || inGUI){
-			drawLowerPanel(vehicle.pack.rendering.hudBackplaneTexturePercentages);
+			drawLowerPanel(vehicle.packComponent.pack.rendering.hudBackplaneTexturePercentages);
 		}else{
 			GL11.glTranslatef(0, screenDefaultY/4, 0);
 		}
 		if(CameraSystem.hudMode == 2 || CameraSystem.hudMode == 3 || inGUI){
-			drawUpperPanel(vehicle.pack.rendering.hudBackplaneTexturePercentages, vehicle.pack.rendering.hudMouldingTexturePercentages);
+			drawUpperPanel(vehicle.packComponent.pack.rendering.hudBackplaneTexturePercentages, vehicle.packComponent.pack.rendering.hudMouldingTexturePercentages);
 		}
 		if(CameraSystem.hudMode > 0 || inGUI){
 			drawInstruments(vehicle, 
@@ -62,7 +61,7 @@ public final class RenderHUD{
 		if(!inGUI){
 			Minecraft.getMinecraft().entityRenderer.enableLightmap();
 		}
-		drawAuxiliaryPanel(vehicle.pack.rendering.hudBackplaneTexturePercentages, vehicle.pack.rendering.hudMouldingTexturePercentages);
+		drawAuxiliaryPanel(vehicle.packComponent.pack.rendering.hudBackplaneTexturePercentages, vehicle.packComponent.pack.rendering.hudMouldingTexturePercentages);
 		drawInstruments(vehicle, 0, 100, 100, false);
 		if(!inGUI){
 			Minecraft.getMinecraft().entityRenderer.disableLightmap();
@@ -71,20 +70,19 @@ public final class RenderHUD{
 	}
 	
 	private static void drawInstruments(EntityVehicleE_Powered vehicle, int minX, int maxX, int maxY, boolean main){
-		for(byte i=0; i<vehicle.pack.motorized.instruments.size(); ++i){
-			PackInstrument packInstrument = vehicle.pack.motorized.instruments.get(i);
-			//Render the instruments in the correct panel.
-			if((packInstrument.optionalEngineNumber == 0 && main) || (packInstrument.optionalEngineNumber != 0 && !main)){
-				if(packInstrument.hudpos != null){
-					if(packInstrument.hudpos[0] >= minX && packInstrument.hudpos[0] <= maxX && packInstrument.hudpos[1] <= maxY){
-						GL11.glPushMatrix();
-						GL11.glTranslated(packInstrument.hudpos[0]*screenDefaultX/100D, packInstrument.hudpos[1]*screenDefaultY/100D, 0);
-						GL11.glScalef(packInstrument.hudScale, packInstrument.hudScale, packInstrument.hudScale);
-						VehicleInstrument instrument = vehicle.getInstrumentInfoInSlot(i);
-						if(instrument != null){
-							RenderInstruments.drawInstrument(vehicle, instrument, true, packInstrument.optionalEngineNumber);
+		for(byte i=0; i<vehicle.instruments.size(); ++i){
+			if(vehicle.instruments.get(i) != null){
+				//Render the instruments in the correct panel.
+				PackInstrument packInstrument = vehicle.packComponent.pack.motorized.instruments.get(i);
+				if((packInstrument.optionalEngineNumber == 0 && main) || (packInstrument.optionalEngineNumber != 0 && !main)){
+					if(packInstrument.hudpos != null){
+						if(packInstrument.hudpos[0] >= minX && packInstrument.hudpos[0] <= maxX && packInstrument.hudpos[1] <= maxY){
+							GL11.glPushMatrix();
+							GL11.glTranslated(packInstrument.hudpos[0]*screenDefaultX/100D, packInstrument.hudpos[1]*screenDefaultY/100D, 0);
+							GL11.glScalef(packInstrument.hudScale, packInstrument.hudScale, packInstrument.hudScale);
+							RenderInstruments.drawInstrument(vehicle, vehicle.instruments.get(i), true, packInstrument.optionalEngineNumber);
+							GL11.glPopMatrix();
 						}
-						GL11.glPopMatrix();
 					}
 				}
 			}
@@ -92,8 +90,8 @@ public final class RenderHUD{
 	}
 	
 	private static void drawControls(EntityVehicleE_Powered vehicle, boolean inGUI){
-		for(byte i=0; i<vehicle.pack.motorized.controls.size(); ++i){
-			PackControl packControl = vehicle.pack.motorized.controls.get(i);
+		for(byte i=0; i<vehicle.packComponent.pack.motorized.controls.size(); ++i){
+			PackControl packControl = vehicle.packComponent.pack.motorized.controls.get(i);
 			for(Controls control : Controls.values()){
 				if(control.name().toLowerCase().equals(packControl.controlName)){
 					GL11.glPushMatrix();

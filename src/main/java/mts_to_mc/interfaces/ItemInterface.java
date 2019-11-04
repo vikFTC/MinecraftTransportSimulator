@@ -19,12 +19,21 @@ public class ItemInterface{
 		return Item.getByNameOrId(name);
 	}
 	
-	public static ItemStack getItemStackByName(String name, int meta, int qty){
+	public static ItemStack getStackByParams(String name, int meta, int qty){
 		if(meta != -1){
 			return new ItemStack(Item.getByNameOrId(name), qty, meta);
 		}else{
 			return new ItemStack(Item.getByNameOrId(name), qty);
 		}
+	}
+	
+	public static ItemStack getStackFromPackMaterial(String material){
+		int itemQty = Integer.valueOf(material.substring(material.lastIndexOf(':') + 1));
+		material = material.substring(0, material.lastIndexOf(':'));
+		
+		int itemMetadata = Integer.valueOf(material.substring(material.lastIndexOf(':') + 1));
+		material = material.substring(0, material.lastIndexOf(':'));
+		return getStackByParams(material, itemQty, itemMetadata);
 	}
 
 }

@@ -1,6 +1,6 @@
 package minecrafttransportsimulator.vehicles.parts;
 
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;

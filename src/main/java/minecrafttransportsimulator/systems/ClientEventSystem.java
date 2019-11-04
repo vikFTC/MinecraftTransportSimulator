@@ -6,13 +6,11 @@ import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.dataclasses.MTSRegistry;
 import minecrafttransportsimulator.guis.GUIConfig;
 import minecrafttransportsimulator.guis.GUIPackMissing;
-import minecrafttransportsimulator.packets.general.PacketPackReload;
 import minecrafttransportsimulator.packets.vehicles.PacketVehicleAttacked;
 import minecrafttransportsimulator.packets.vehicles.PacketVehicleInteracted;
+import minecrafttransportsimulator.packs.PackLoader;
 import minecrafttransportsimulator.radio.RadioManager;
 import minecrafttransportsimulator.rendering.RenderHUD;
-import minecrafttransportsimulator.rendering.RenderVehicle;
-import minecrafttransportsimulator.vehicles.main.EntityVehicleA_Base;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleB_Existing;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleC_Colliding;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
@@ -120,7 +118,7 @@ public final class ClientEventSystem{
                     	if(minecraft.player.getRidingEntity() instanceof EntityVehicleE_Powered){
                     		EntityVehicleE_Powered vehicle = (EntityVehicleE_Powered) minecraft.player.getRidingEntity();
                     		if(vehicle.getSeatForRider(minecraft.player) != null){
-                    			ControlSystem.controlVehicle(vehicle, vehicle.getSeatForRider(minecraft.player).isController);
+                    			ControlSystem.controlVehicle(vehicle, vehicle.getSeatForRider(minecraft.player).vehicleDefinition.isController);
                     		}
                         }
                     }
@@ -204,11 +202,11 @@ public final class ClientEventSystem{
         if(event.getEntityPlayer().getRidingEntity() instanceof EntityVehicleC_Colliding){
         	EntityVehicleC_Colliding vehicle = (EntityVehicleC_Colliding) event.getEntityPlayer().getRidingEntity();
         	GL11.glPushMatrix();
-        	if(vehicle.pack != null){
+        	if(vehicle.packComponent != null){
 	        	PartSeat seat = vehicle.getSeatForRider(event.getEntityPlayer());
 	        	if(seat != null){
 		            //First restrict the player's yaw to prevent them from being able to rotate their body in a seat.
-		            Vec3d placementRotation = seat.partRotation;
+		            Vec3d placementRotation = seat.currentRotation;
 		            event.getEntityPlayer().renderYawOffset = (float) (vehicle.rotationYaw + placementRotation.y);
 		            if(vehicle.rotationPitch > 90 || vehicle.rotationPitch < -90){
 		            	event.getEntityPlayer().rotationYawHead = event.getEntityPlayer().rotationYaw*-1F;
@@ -267,7 +265,7 @@ public final class ClientEventSystem{
                 if(minecraft.player.getRidingEntity() instanceof EntityVehicleE_Powered){
                 	EntityVehicleE_Powered vehicle = (EntityVehicleE_Powered) minecraft.player.getRidingEntity();
                 	if(vehicle.getSeatForRider(minecraft.player) != null){
-	                	if(vehicle.getSeatForRider(minecraft.player).isController && (minecraft.gameSettings.thirdPersonView==0 || CameraSystem.hudMode == 1) && !CameraSystem.disableHUD){
+	                	if(vehicle.getSeatForRider(minecraft.player).vehicleDefinition.isController && (minecraft.gameSettings.thirdPersonView==0 || CameraSystem.hudMode == 1) && !CameraSystem.disableHUD){
 	                		GL11.glPushMatrix();
 	                		GL11.glScalef(1.0F*event.getResolution().getScaledWidth()/RenderHUD.screenDefaultX, 1.0F*event.getResolution().getScaledHeight()/RenderHUD.screenDefaultY, 0);
 	                		RenderHUD.drawMainHUD(vehicle, false);
@@ -284,7 +282,7 @@ public final class ClientEventSystem{
      */
     @SubscribeEvent
     public static void on(DrawScreenEvent.Post event){
-    	if(PackParserSystem.getAllVehiclePackNames().isEmpty()){
+    	if(PackLoader.vehicleComponents.isEmpty() && PackLoader.partComponents.isEmpty() && PackLoader.signComponents.isEmpty()){
 	    	if(event.getGui() instanceof GuiContainerCreative){
 	    		GuiContainerCreative creativeScreen = (GuiContainerCreative) event.getGui();
 	    		if(CreativeTabs.CREATIVE_TAB_ARRAY[creativeScreen.getSelectedTabIndex()].equals(MTSRegistry.coreTab)){
@@ -301,6 +299,8 @@ public final class ClientEventSystem{
     public static void onKeyInput(InputEvent.KeyInputEvent event){
         if(ControlSystem.isMasterControlButttonPressed()){
         	if(ConfigSystem.getBooleanConfig("DevMode") && minecraft.isSingleplayer()){
+        		//TODO re-parse packs here.
+        		/*
         		PackParserSystem.reloadPackData();
         		RenderVehicle.clearCaches();
         		minecraft.refreshResources();
@@ -311,6 +311,7 @@ public final class ClientEventSystem{
 					}
 				}
         		MTS.MTSNet.sendToServer(new PacketPackReload());
+        		*/
         	}
             if(minecraft.currentScreen == null){
             	FMLCommonHandler.instance().showGuiScreen(new GUIConfig());

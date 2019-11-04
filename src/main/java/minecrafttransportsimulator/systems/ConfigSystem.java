@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import minecrafttransportsimulator.packloading.PackPartObject;
+import minecrafttransportsimulator.packs.PackLoader;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 
@@ -59,16 +60,17 @@ public final class ConfigSystem{
 	public static void initFuels(){
 		//First get all valid fuel names from engines.
 		List<String> fuelNames = new ArrayList<String>();
-		for(String packPartName : PackParserSystem.getAllPartPackNames()){
-			PackPartObject packPart = PackParserSystem.getPartPack(packPartName);
-			if(packPart.general.type.startsWith("engine")){
-				//For old packs, if we don't have a fuelType set it to diesel.
-				//This is because it's the most versatile fuel, and all the old packs have heavy equipment.
-				if(packPart.engine.fuelType == null){
-					packPart.engine.fuelType = "diesel";
-				}
-				if(!fuelNames.contains(packPart.engine.fuelType)){
-					fuelNames.add(packPart.engine.fuelType);
+		for(List<PackComponentPart> componentList : PackLoader.partComponents.values()){
+			for(PackComponentPart component : componentList){
+				if(component.pack.general.type.startsWith("engine")){
+					//For old packs, if we don't have a fuelType set it to diesel.
+					//This is because it's the most versatile fuel, and all the old packs have heavy equipment.
+					if(component.pack.engine.fuelType == null){
+						component.pack.engine.fuelType = "diesel";
+					}
+					if(!fuelNames.contains(component.pack.engine.fuelType)){
+						fuelNames.add(component.pack.engine.fuelType);
+					}
 				}
 			}
 		}

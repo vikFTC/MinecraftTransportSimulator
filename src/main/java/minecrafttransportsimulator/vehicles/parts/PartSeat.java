@@ -1,8 +1,11 @@
 package minecrafttransportsimulator.vehicles.parts;
 
+import java.util.List;
+
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.packets.general.PacketChat;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,8 +14,8 @@ import net.minecraft.nbt.NBTTagCompound;
 
 public final class PartSeat extends APart{
 	
-	public PartSeat(EntityVehicleE_Powered vehicle, PackPart packPart, String partName, NBTTagCompound dataTag){
-		super(vehicle, packPart, partName, dataTag);
+	public PartSeat(EntityVehicleE_Powered vehicle, PackComponentPart packComponent, PackPart vehicleDefinition, NBTTagCompound dataTag){
+		super(vehicle, packComponent, vehicleDefinition, dataTag);
 	}
 	
 	@Override
@@ -37,8 +40,8 @@ public final class PartSeat extends APart{
     }
 	
 	@Override
-	public void removePart(){
-		super.removePart();
+	public void removePart(List<APart> partsToRemove){
+		super.removePart(partsToRemove);
 		if(vehicle.getRiderForSeat(this) != null){
 			vehicle.getRiderForSeat(this).dismountRidingEntity();
 		}

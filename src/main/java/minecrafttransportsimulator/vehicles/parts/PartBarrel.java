@@ -2,7 +2,8 @@ package minecrafttransportsimulator.vehicles.parts;
 
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.packets.general.PacketChat;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -24,9 +25,9 @@ public final class PartBarrel extends APart implements IFluidTank, IFluidHandler
 	private FluidTankInfo tankInfo;
 	private final FluidTankInfo emptyTankInfo;
 	
-	public PartBarrel(EntityVehicleE_Powered vehicle, PackPart packPart, String partName, NBTTagCompound dataTag){
-		super(vehicle, packPart, partName, dataTag);
-		this.emptyTankInfo =  new FluidTankInfo(null, pack.barrel.capacity);
+	public PartBarrel(EntityVehicleE_Powered vehicle, PackComponentPart packComponent, PackPart vehicleDefinition, NBTTagCompound dataTag){
+		super(vehicle, packComponent, vehicleDefinition, dataTag);
+		this.emptyTankInfo =  new FluidTankInfo(null, packComponent.pack.barrel.capacity);
 		if(dataTag.hasKey("FluidName")){
         	this.tankInfo = new FluidTankInfo(FluidStack.loadFluidStackFromNBT(dataTag), emptyTankInfo.capacity);
         }else{

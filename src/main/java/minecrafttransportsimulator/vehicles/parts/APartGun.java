@@ -3,10 +3,11 @@ package minecrafttransportsimulator.vehicles.parts;
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.items.parts.ItemPartBullet;
 import minecrafttransportsimulator.packets.parts.PacketPartGunReload;
-import minecrafttransportsimulator.packloading.PackPartObject;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
-import minecrafttransportsimulator.systems.VehicleEffectsSystem.FXPart;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.objects.PackObjectPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.systems.PackParserSystem;
+import minecrafttransportsimulator.systems.VehicleEffectsSystem.FXPart;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -40,14 +41,14 @@ public abstract class APartGun extends APart implements FXPart{
 	
 	private final double anglePerTickSpeed;
 		
-	public APartGun(EntityVehicleE_Powered vehicle, PackPart packPart, String partName, NBTTagCompound dataTag){
-		super(vehicle, packPart, partName, dataTag);
+	public APartGun(EntityVehicleE_Powered vehicle, PackComponentPart packComponent, PackPart vehicleDefinition, NBTTagCompound dataTag){
+		super(vehicle, packComponent, vehicleDefinition, dataTag);
 		this.shotsFired = dataTag.getInteger("shotsFired");
 		this.bulletsLeft = dataTag.getInteger("bulletsLeft");
 		this.currentPitch = dataTag.getFloat("currentPitch");
 		this.currentYaw = dataTag.getFloat("currentYaw");
 		this.loadedBullet = dataTag.getString("loadedBullet");
-		this.anglePerTickSpeed = (50/pack.gun.diameter + 1/pack.gun.length);
+		this.anglePerTickSpeed = (50/packComponent.pack.gun.diameter + 1/packComponent.pack.gun.length);
 	}
 	
 	@Override
@@ -60,15 +61,15 @@ public abstract class APartGun extends APart implements FXPart{
 			if(heldStack != null && heldStack.getItem() instanceof ItemPartBullet){
 				ItemPartBullet bulletItem = (ItemPartBullet) heldStack.getItem();
 				//Only fill bullets if we match the bullet already in the gun, or if our diameter matches.
-				if((loadedBullet.isEmpty() && bulletItem.bulletPackData.diameter == this.pack.gun.diameter) || loadedBullet.equals(bulletItem.partName)){
+				if((loadedBullet.isEmpty() && bulletItem.bulletPackData.diameter == this.packComponent.pack.gun.diameter) || loadedBullet.equals(bulletItem.partName)){
 					//Make sure we don't over-fill the gun.
-					if(bulletItem.bulletPackData.quantity <= this.pack.gun.capacity + this.bulletsLeft){
+					if(bulletItem.bulletPackData.quantity <= this.packComponent.pack.gun.capacity + this.bulletsLeft){
 						if(!player.capabilities.isCreativeMode){
 							player.inventory.clearMatchingItems(bulletItem, -1, 1, null);
 						}
 						this.loadedBullet = bulletItem.partName;
 						this.bulletsLeft += bulletItem.bulletPackData.quantity;
-						reloadTimeRemaining = pack.gun.reloadTime;
+						reloadTimeRemaining = packComponent.pack.gun.reloadTime;
 						reloading = true;
 						MTS.MTSNet.sendToAll(new PacketPartGunReload(this, bulletItem.partName));
 					}
@@ -89,7 +90,7 @@ public abstract class APartGun extends APart implements FXPart{
 			}
 		}else{
 			shotsFired += (int) (damage*10F);
-			reloadTimeRemaining = pack.gun.reloadTime;
+			reloadTimeRemaining = packComponent.pack.gun.reloadTime;
 			reloading = true;
 		}
 	}
@@ -103,11 +104,11 @@ public abstract class APartGun extends APart implements FXPart{
 		if(playerControllerID != -1){
 			Entity playerController = vehicle.world.getEntityByID(playerControllerID);
 			PartSeat seat = vehicle.getSeatForRider(playerController);
-			if(seat != null && (this.parentPart == null ? seat.isController : this.parentPart.equals(seat))){
+			if(seat != null && (this.parentPart == null ? seat.vehicleDefinition.isController : this.parentPart.equals(seat))){
 				//If we are out of bullets, and we can automatically reload, and are not doing so, start the reload sequence.
-				if(bulletsLeft == 0 && pack.gun.autoReload && !reloading){
+				if(bulletsLeft == 0 && packComponent.pack.gun.autoReload && !reloading){
 					//Iterate through all the inventory slots in crates to try to find matching ammo.
-					for(APart part : vehicle.getVehicleParts()){
+					for(APart part : vehicle.parts){
 						if(part instanceof PartCrate){
 							InventoryBasic crateInventory = ((PartCrate) part).crateInventory;
 							for(byte i=0; i<crateInventory.getSizeInventory(); ++i){
@@ -116,12 +117,12 @@ public abstract class APartGun extends APart implements FXPart{
 									ItemPartBullet bullet = (ItemPartBullet) stack.getItem();
 									//Only reload the same bulletType to ensure we don't mis-match ammo.
 									if(loadedBullet == null || loadedBullet.equals(bullet.partName)){
-										PackPartObject bulletPack = PackParserSystem.getPartPack(bullet.partName);
+										PackObjectPart bulletPack = PackParserSystem.getPartPack(bullet.partName);
 										//Also check to see if we have enough space for this bullet.
-										if(bulletPack.bullet.quantity + bulletsLeft <= pack.gun.capacity){
+										if(bulletPack.bullet.quantity + bulletsLeft <= packComponent.pack.gun.capacity){
 											//Bullet is right type, and we can fit it.  Remove from crate and add to the gun.
 											//Return here to ensure we don't set the loadedBullet to blank since we found bullets.
-											reloadTimeRemaining = pack.gun.reloadTime;
+											reloadTimeRemaining = packComponent.pack.gun.reloadTime;
 											reloading = true;
 											crateInventory.decrStackSize(i, 1);
 											this.loadedBullet = bullet.partName;
@@ -157,7 +158,7 @@ public abstract class APartGun extends APart implements FXPart{
 					//If we aren't in a cooldown time, we can fire.
 					if(cooldownTimeRemaining == 0){
 						//We would fire a bullet here, but that's for the SFXSystem to handle, not the update loop.
-						cooldownTimeRemaining = pack.gun.fireDelay;
+						cooldownTimeRemaining = packComponent.pack.gun.fireDelay;
 						lastTickToFire = vehicle.world.getTotalWorldTime();
 						--bulletsLeft;
 					}
@@ -172,7 +173,7 @@ public abstract class APartGun extends APart implements FXPart{
 				//When we do yaw, make sure we do calculations with positive values.
 				//Both the vehicle and the player can have yaw greater than 360.
 				double deltaPitch = playerController.rotationPitch - vehicle.rotationPitch;
-				double deltaYaw = (vehicle.rotationYaw%360 - partRotation.y + 360)%360 - (playerController.rotationYaw%360 + 360)%360;
+				double deltaYaw = (vehicle.rotationYaw%360 - currentRotation.y + 360)%360 - (playerController.rotationYaw%360 + 360)%360;
 				if(deltaPitch < currentPitch && currentPitch > getMinPitch()){
 					currentPitch -= Math.min(anglePerTickSpeed, currentPitch - deltaPitch);
 				}else if(deltaPitch > currentPitch && currentPitch < getMaxPitch()){
@@ -231,8 +232,8 @@ public abstract class APartGun extends APart implements FXPart{
 			//Angle is based on rotation of the vehicle, gun, and gun mount.
 			//Set the trajectory of the bullet.
 			//Add a slight fudge-factor to the bullet's trajectory depending on the barrel length and shell size.
-			float bulletYaw = (float) (vehicle.rotationYaw - partRotation.y - currentYaw + (Math.random() - 0.5F)*(10*pack.gun.diameter/(pack.gun.length*1000)));
-			float bulletPitch = (float) (vehicle.rotationPitch + partRotation.x + currentPitch + (Math.random() - 0.5F)*(10*pack.gun.diameter/(pack.gun.length*1000)));
+			float bulletYaw = (float) (vehicle.rotationYaw - currentRotation.y - currentYaw + (Math.random() - 0.5F)*(10*packComponent.pack.gun.diameter/(packComponent.pack.gun.length*1000)));
+			float bulletPitch = (float) (vehicle.rotationPitch + currentRotation.x + currentPitch + (Math.random() - 0.5F)*(10*packComponent.pack.gun.diameter/(packComponent.pack.gun.length*1000)));
 			
 			//Set initial velocity to the gun muzzle velocity times the speedFactor.
 			//We bring in the code for vectors here to make the velocity calculations easier.
@@ -243,13 +244,13 @@ public abstract class APartGun extends APart implements FXPart{
 	        float f3 = MathHelper.sin(-bulletPitch * 0.017453292F);
 	        Vec3d bulletOrientation = new Vec3d((double)(f1 * f2), (double)f3, (double)(f * f2));
 			
-			double bulletMotionX = bulletOrientation.x*pack.gun.muzzleVelocity/20D/10D;
-			double bulletMotionY = bulletOrientation.y*pack.gun.muzzleVelocity/20D/10D;
-			double bulletMotionZ = bulletOrientation.z*pack.gun.muzzleVelocity/20D/10D;
+			double bulletMotionX = bulletOrientation.x*packComponent.pack.gun.muzzleVelocity/20D/10D;
+			double bulletMotionY = bulletOrientation.y*packComponent.pack.gun.muzzleVelocity/20D/10D;
+			double bulletMotionZ = bulletOrientation.z*packComponent.pack.gun.muzzleVelocity/20D/10D;
 			
 			//Now add the bullet as a particle.
-			Minecraft.getMinecraft().effectRenderer.addEffect(new PartBullet(vehicle.world, partPos.x, partPos.y, partPos.z, bulletMotionX, bulletMotionY, bulletMotionZ, loadedBullet, playerControllerID, this.vehicle));
-			MTS.proxy.playSound(partPos, partName + "_firing", 1, 1);
+			Minecraft.getMinecraft().effectRenderer.addEffect(new PartBullet(vehicle.world, currentPosition.x, currentPosition.y, currentPosition.z, bulletMotionX, bulletMotionY, bulletMotionZ, loadedBullet, playerControllerID, this.vehicle));
+			MTS.proxy.playSound(currentPosition, packComponent.name + "_firing", 1, 1);
 			lastTickFired = lastTickToFire;
 		}
 	}

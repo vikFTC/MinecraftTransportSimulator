@@ -15,8 +15,8 @@ import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.blocks.core.BlockBench;
 import minecrafttransportsimulator.dataclasses.MTSRegistry;
 import minecrafttransportsimulator.packets.general.PacketPlayerCrafting;
-import minecrafttransportsimulator.packloading.PackVehicleObject;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.systems.OBJParserSystem;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import net.minecraft.client.gui.GuiButton;
@@ -250,7 +250,7 @@ public class GUIPartBench extends GuiScreen{
 	}
 	
 	private void renderVehicleInfoText(){
-		PackVehicleObject pack = PackParserSystem.getVehiclePack(partName);
+		PackObjectVehicle pack = PackParserSystem.getVehiclePack(partName);
 		byte controllers = 0;
 		byte passengers = 0;
 		byte cargo = 0;

@@ -1,14 +1,15 @@
 package minecrafttransportsimulator.vehicles.parts;
 
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 
 public class PartEngineBoat extends APartEngine{
 
-	public PartEngineBoat(EntityVehicleE_Powered vehicle, PackPart packPart, String partName, NBTTagCompound dataTag){
-		super(vehicle, packPart, partName, dataTag);
+	public PartEngineBoat(EntityVehicleE_Powered vehicle, PackComponentPart packComponent, PackPart vehicleDefinition, NBTTagCompound dataTag){
+		super(vehicle, packComponent, vehicleDefinition, dataTag);
 	}
 	
 	@Override
@@ -18,10 +19,10 @@ public class PartEngineBoat extends APartEngine{
 		//This pitch is only used when the engine is turned off and not providing power, so it's not really critical.
 		//Gear ratio is assumed to be 1, as it'll be a straight-shaft connection.
 		if(state.running){
-			double engineTargetRPM = vehicle.throttle/100F*(pack.engine.maxRPM - engineStartRPM*1.25 - hours) + engineStartRPM*1.25;
+			double engineTargetRPM = vehicle.throttle/100F*(packComponent.pack.engine.maxRPM - engineStartRPM*1.25 - hours) + engineStartRPM*1.25;
 			
 			//Check 1 block down for liquid.  If we are in liquid, then we should provide power.
-			if(vehicle.world.getBlockState(new BlockPos(partPos).down()).getMaterial().isLiquid()){
+			if(vehicle.world.getBlockState(new BlockPos(currentPosition).down()).getMaterial().isLiquid()){
 				//PropellerFeedback can't make an engine stall, but hours can.
 				RPM += (engineTargetRPM - engineStartRPM*0.15F - RPM)/10;
 			}else{
@@ -39,6 +40,6 @@ public class PartEngineBoat extends APartEngine{
 	
 	@Override
 	public double getForceOutput(){
-		return state.running ? RPM/pack.engine.maxRPM*5*pack.engine.fuelConsumption : 0;
+		return state.running ? RPM/packComponent.pack.engine.maxRPM*5*packComponent.pack.engine.fuelConsumption : 0;
 	}
 }

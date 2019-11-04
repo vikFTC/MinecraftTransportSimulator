@@ -13,8 +13,8 @@ import minecrafttransportsimulator.items.core.ItemDecor;
 import minecrafttransportsimulator.items.core.ItemVehicle;
 import minecrafttransportsimulator.items.parts.AItemPart;
 import minecrafttransportsimulator.packets.general.PacketManualPageUpdate;
-import minecrafttransportsimulator.packloading.PackDecorObject;
-import minecrafttransportsimulator.packloading.PackPartObject;
+import minecrafttransportsimulator.packs.objects.PackObjectDecor;
+import minecrafttransportsimulator.packs.objects.PackObjectPart;
 import minecrafttransportsimulator.systems.ConfigSystem;
 import minecrafttransportsimulator.systems.OBJParserSystem;
 import minecrafttransportsimulator.systems.PackParserSystem;
@@ -147,7 +147,7 @@ public class GUIManual extends GuiScreen{
 					textureLocation = new ResourceLocation(packName, "textures/vehicles/" + item.vehicleName.substring(item.vehicleName.indexOf(':') + 1) + ".png");
 				}else if(stack.getItem() instanceof AItemPart){
 					AItemPart item = (AItemPart) stack.getItem();
-					PackPartObject pack = PackParserSystem.getPartPack(item.partName);
+					PackObjectPart pack = PackParserSystem.getPartPack(item.partName);
 					String packName = item.partName.substring(0, item.partName.indexOf(':'));
 					if(pack.general.modelName != null){
 						modelLocation = new ResourceLocation(packName, "objmodels/parts/" + pack.general.modelName + ".obj");
@@ -157,7 +157,7 @@ public class GUIManual extends GuiScreen{
 					textureLocation = new ResourceLocation(packName, "textures/parts/" + item.partName.substring(item.partName.indexOf(':') + 1) + ".png");
 				}else if(stack.getItem() instanceof ItemDecor){
 					ItemDecor item = (ItemDecor) stack.getItem();
-					PackDecorObject pack = PackParserSystem.getDecor(item.decorName);
+					PackObjectDecor pack = PackParserSystem.getDecor(item.decorName);
 					String packName = item.decorName.substring(0, item.decorName.indexOf(':'));
 					modelLocation = new ResourceLocation(packName, "objmodels/decors/" + item.decorName.substring(item.decorName.indexOf(':') + 1) + ".obj");
 					textureLocation = new ResourceLocation(packName, "textures/decors/" + item.decorName.substring(item.decorName.indexOf(':') + 1) + ".png");

@@ -6,7 +6,8 @@ import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.dataclasses.DamageSources.DamageSourcePropellor;
 import minecrafttransportsimulator.packets.parts.PacketPartEngineSignal;
 import minecrafttransportsimulator.packets.parts.PacketPartEngineSignal.PacketEngineTypes;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.systems.ConfigSystem;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleF_Air;
@@ -27,10 +28,10 @@ public class PartPropeller extends APart{
 	private final PartEngineAircraft connectedEngine;
 	private final EntityVehicleF_Air aircraft;
 	
-	public PartPropeller(EntityVehicleE_Powered vehicle, PackPart packPart, String partName, NBTTagCompound dataTag){
-		super(vehicle, packPart, partName, dataTag);
+	public PartPropeller(EntityVehicleE_Powered vehicle, PackComponentPart packComponent, PackPart vehicleDefinition, NBTTagCompound dataTag){
+		super(vehicle, packComponent, vehicleDefinition, dataTag);
 		this.damage = dataTag.getFloat("damage");
-		this.currentPitch = pack.propeller.pitch;
+		this.currentPitch = packComponent.pack.propeller.pitch;
 		this.connectedEngine = (PartEngineAircraft) parentPart;
 		this.aircraft = (EntityVehicleF_Air) vehicle;
 	}
@@ -55,19 +56,19 @@ public class PartPropeller extends APart{
 		super.updatePart();
 		//If we are a dynamic-pitch propeller, adjust ourselves to the speed of the engine.
 		//But don't do this for blimps, as they reverse their engines rather than adjust their propellers.
-		if(pack.propeller.isDynamicPitch && !(aircraft instanceof EntityVehicleG_Blimp)){
+		if(packComponent.pack.propeller.isDynamicPitch && !(aircraft instanceof EntityVehicleG_Blimp)){
 			if(aircraft.reverseThrust && currentPitch > -45){
 				--currentPitch;
 			}else if(!aircraft.reverseThrust && currentPitch < 45){
 				++currentPitch;
-			}else if(connectedEngine.RPM < connectedEngine.pack.engine.maxRPM*0.80 && currentPitch > 45){
+			}else if(connectedEngine.RPM < connectedEngine.packComponent.pack.engine.maxRPM*0.80 && currentPitch > 45){
 				--currentPitch;
-			}else if(connectedEngine.RPM > connectedEngine.pack.engine.maxRPM*0.85 && currentPitch < pack.propeller.pitch){
+			}else if(connectedEngine.RPM > connectedEngine.packComponent.pack.engine.maxRPM*0.85 && currentPitch < packComponent.pack.propeller.pitch){
 				++currentPitch;
 			}
 		}
 		if(vehicle.world.isRemote){
-			angularVelocity = (float) (360*connectedEngine.RPM*connectedEngine.pack.engine.gearRatios[0]/60F/20F);
+			angularVelocity = (float) (360*connectedEngine.RPM*connectedEngine.packComponent.pack.engine.gearRatios[0]/60F/20F);
 			angularPosition += angularVelocity;
 		}else{
 			if(connectedEngine.RPM >= 100){
@@ -75,14 +76,14 @@ public class PartPropeller extends APart{
 				if(!collidedEntites.isEmpty()){
 					Entity attacker = null;
 					for(Entity passenger : vehicle.getPassengers()){
-						if(vehicle.getSeatForRider(passenger).isController){
+						if(vehicle.getSeatForRider(passenger).vehicleDefinition.isController){
 							attacker = passenger;
 							break;
 						}
 					}
 					for(int i=0; i < collidedEntites.size(); ++i){
 						if(!vehicle.equals(collidedEntites.get(i).getRidingEntity())){
-							collidedEntites.get(i).attackEntityFrom(new DamageSourcePropellor(attacker), (float) (ConfigSystem.getDoubleConfig("PropellerDamageFactor")*connectedEngine.RPM*connectedEngine.pack.engine.gearRatios[0]/500F));
+							collidedEntites.get(i).attackEntityFrom(new DamageSourcePropellor(attacker), (float) (ConfigSystem.getDoubleConfig("PropellerDamageFactor")*connectedEngine.RPM*connectedEngine.packComponent.pack.engine.gearRatios[0]/500F));
 						}
 					}
 				}
@@ -90,7 +91,7 @@ public class PartPropeller extends APart{
 					damagePropeller(1);
 					
 				}
-				if(connectedEngine.RPM*connectedEngine.pack.engine.gearRatios[0]/60*Math.PI*pack.propeller.diameter*0.0254 > 340.29){
+				if(connectedEngine.RPM*connectedEngine.packComponent.pack.engine.gearRatios[0]/60*Math.PI*packComponent.pack.propeller.diameter*0.0254 > 340.29){
 					damagePropeller(9999);
 				}
 			}
@@ -106,12 +107,12 @@ public class PartPropeller extends APart{
 	
 	@Override
 	public float getWidth(){
-		return pack.propeller.diameter*0.0254F/2F;
+		return packComponent.pack.propeller.diameter*0.0254F/2F;
 	}
 
 	@Override
 	public float getHeight(){
-		return pack.propeller.diameter*0.0254F;
+		return packComponent.pack.propeller.diameter*0.0254F;
 	}
 
 	@Override
@@ -127,7 +128,8 @@ public class PartPropeller extends APart{
 	
 	private void damagePropeller(float damage){
 		this.damage += damage;
-		if(this.damage > pack.propeller.startingHealth && !vehicle.world.isRemote){
+		//TODO this needs to go in the update loop, otherwise we'll get a CME when we do attack checks.
+		if(this.damage > packComponent.pack.propeller.startingHealth && !vehicle.world.isRemote){
 			vehicle.removePart(this, true);
 		}
 	}

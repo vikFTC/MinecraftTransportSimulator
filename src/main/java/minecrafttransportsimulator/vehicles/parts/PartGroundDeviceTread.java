@@ -1,12 +1,13 @@
 package minecrafttransportsimulator.vehicles.parts;
 
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import net.minecraft.nbt.NBTTagCompound;
 
 public final class PartGroundDeviceTread extends APartGroundDevice{
-	public PartGroundDeviceTread(EntityVehicleE_Powered vehicle, PackPart packPart, String partName, NBTTagCompound dataTag){
-		super(vehicle, packPart, partName, dataTag);
+	public PartGroundDeviceTread(EntityVehicleE_Powered vehicle, PackComponentPart packComponent, PackPart vehicleDefinition, NBTTagCompound dataTag){
+		super(vehicle, packComponent, vehicleDefinition, dataTag);
 	}	
 	
 	@Override
@@ -16,7 +17,7 @@ public final class PartGroundDeviceTread extends APartGroundDevice{
 	
 	@Override
 	public float getWidth(){
-		return this.pack.tread.width;
+		return this.packComponent.pack.tread.width;
 	}
 	
 	@Override
@@ -26,17 +27,17 @@ public final class PartGroundDeviceTread extends APartGroundDevice{
 	
 	@Override
 	public float getMotiveFriction(){
-		return this.pack.tread.motiveFriction;
+		return this.packComponent.pack.tread.motiveFriction;
 	}
 	
 	@Override
 	public float getLateralFriction(){
-		return this.pack.tread.lateralFriction;
+		return this.packComponent.pack.tread.lateralFriction;
 	}
 	
 	@Override
 	public float getLongPartOffset(){
-		return pack.tread.extraCollisionBoxOffset;
+		return packComponent.pack.tread.extraCollisionBoxOffset;
 	}
 	
 	@Override

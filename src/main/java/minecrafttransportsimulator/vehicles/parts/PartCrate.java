@@ -2,7 +2,8 @@ package minecrafttransportsimulator.vehicles.parts;
 
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.packets.general.PacketChat;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -14,9 +15,9 @@ import net.minecraft.nbt.NBTTagList;
 public final class PartCrate extends APart{
 	public final InventoryBasic crateInventory;
 	
-	public PartCrate(EntityVehicleE_Powered vehicle, PackPart packPart, String partName, NBTTagCompound dataTag){
-		super(vehicle, packPart, partName, dataTag);
-		this.crateInventory = new InventoryBasic("", false, Math.min(pack.crate.rows, 6)*9);
+	public PartCrate(EntityVehicleE_Powered vehicle, PackComponentPart packComponent, PackPart vehicleDefinition, NBTTagCompound dataTag){
+		super(vehicle, packComponent, vehicleDefinition, dataTag);
+		this.crateInventory = new InventoryBasic("", false, Math.min(packComponent.pack.crate.rows, 6)*9);
 		NBTTagList stackTagList = dataTag.getTagList("Items", 10);
         for (byte i = 0; i < stackTagList.tagCount(); ++i){
             NBTTagCompound stackTag = stackTagList.getCompoundTagAt(i);

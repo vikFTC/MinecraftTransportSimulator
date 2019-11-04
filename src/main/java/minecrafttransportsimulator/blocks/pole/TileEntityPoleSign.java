@@ -3,7 +3,7 @@ package minecrafttransportsimulator.blocks.pole;
 import java.util.ArrayList;
 import java.util.List;
 
-import minecrafttransportsimulator.packloading.PackSignObject;
+import minecrafttransportsimulator.packs.objects.PackObjectSign;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -19,7 +19,7 @@ public class TileEntityPoleSign extends TileEntityPoleWallConnector{
     public void readFromNBT(NBTTagCompound tagCompound){
         super.readFromNBT(tagCompound);
         this.definition = tagCompound.getString("definition");
-        PackSignObject pack = PackParserSystem.getSign(definition);
+        PackObjectSign pack = PackParserSystem.getSign(definition);
         if(pack != null){
 	        text.clear();
 	        if(PackParserSystem.getSign(definition).general.textLines != null){

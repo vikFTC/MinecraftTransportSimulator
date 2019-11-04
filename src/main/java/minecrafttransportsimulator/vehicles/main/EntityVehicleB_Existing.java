@@ -9,14 +9,16 @@ import com.google.common.collect.HashBiMap;
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.packets.parts.PacketPartSeatRiderChange;
 import minecrafttransportsimulator.packets.vehicles.PacketVehicleWindowBreak;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.components.PackComponentVehicle;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.systems.ConfigSystem;
-import minecrafttransportsimulator.systems.PackParserSystem;
 import minecrafttransportsimulator.systems.RotationSystem;
 import minecrafttransportsimulator.vehicles.parts.APart;
 import minecrafttransportsimulator.vehicles.parts.PartBarrel;
 import minecrafttransportsimulator.vehicles.parts.PartCrate;
 import minecrafttransportsimulator.vehicles.parts.PartSeat;
+import mts_to_mc.interfaces.FileInterface;
+import mts_to_mc.interfaces.ItemInterface;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
@@ -77,21 +79,21 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 		super(world);
 	}
 	
-	public EntityVehicleB_Existing(World world, float posX, float posY, float posZ, float playerRotation, String vehicleName){
-		super(world, vehicleName);
+	public EntityVehicleB_Existing(World world, float posX, float posY, float posZ, float playerRotation, PackComponentVehicle packComponent){
+		super(world, packComponent);
 		//Set position to the spot that was clicked by the player.
 		//Add a -90 rotation offset so the vehicle is facing perpendicular.
 		//Makes placement easier and is less likely for players to get stuck.
 		this.setPositionAndRotation(posX, posY, posZ, playerRotation-90, 0);
 		
 		//This only gets done at the beginning when the entity is first spawned.
-		this.displayText = pack.rendering.defaultDisplayText;
+		this.displayText = packComponent.pack.rendering.defaultDisplayText;
 	}
 	
 	@Override
 	public void onEntityUpdate(){
 		super.onEntityUpdate();
-		if(pack != null){
+		if(packComponent != null){
 			currentMass = getCurrentMass();
 			airDensity = 1.225*Math.pow(2, -posY/(500D*world.getHeight()/256D));
 			getBasicProperties();
@@ -137,7 +139,7 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 				//This is a projectile of some sort.  If this projectile is inside a part
 				//make it hit the part rather than hit the vehicle.
 				Entity projectile = source.getImmediateSource();
-				for(APart part : this.getVehicleParts()){
+				for(APart part : parts){
 					//Expand this box by the speed of the projectile just in case the projectile is custom and
 					//calls its attack code before it actually gets inside the collision box.
 					if(part.getAABBWithOffset(Vec3d.ZERO).expand(Math.abs(projectile.motionX), Math.abs(projectile.motionY), Math.abs(projectile.motionZ)).contains(projectile.getPositionVector())){
@@ -162,7 +164,7 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 			//Since we didn't forward any attacks or do special events, we must have attacked this vehicle directly.
 			//Send a packet to break a window if we need to.
 			Entity damageSource = source.getTrueSource() != null && !source.getTrueSource().equals(source.getImmediateSource()) ? source.getImmediateSource() : source.getTrueSource();
-			if(damageSource != null && this.brokenWindows < pack.rendering.numberWindows){
+			if(damageSource != null && this.brokenWindows < packComponent.pack.rendering.numberWindows){
 				++brokenWindows;
 				this.playSound(SoundEvents.BLOCK_GLASS_BREAK, 2.0F, 1.0F);
 				MTS.MTSNet.sendToAll(new PacketVehicleWindowBreak(this));
@@ -199,18 +201,18 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 	public void updatePassenger(Entity passenger){
 		PartSeat seat = this.getSeatForRider(passenger);
 		if(seat != null){
-			Vec3d posVec = RotationSystem.getRotatedPoint(seat.offset.addVector(0, -seat.getHeight()/2F + passenger.getYOffset() + passenger.height, 0), this.rotationPitch, this.rotationYaw, this.rotationRoll);
+			Vec3d posVec = RotationSystem.getRotatedPoint(seat.currentOffset.addVector(0, -seat.getHeight()/2F + passenger.getYOffset() + passenger.height, 0), this.rotationPitch, this.rotationYaw, this.rotationRoll);
 			passenger.setPosition(this.posX + posVec.x, this.posY + posVec.y - passenger.height, this.posZ + posVec.z);
 			passenger.motionX = this.motionX;
 			passenger.motionY = this.motionY;
 			passenger.motionZ = this.motionZ;
-		}else if(pack != null && !this.riderSeatPositions.isEmpty()){
+		}else if(packComponent != null && !riderSeatPositions.isEmpty()){
 			Double[] seatLocation = this.riderSeatPositions.get(this.getPassengers().indexOf(passenger));
 			APart part = getPartAtLocation(seatLocation[0], seatLocation[1], seatLocation[2]);
 			if(part instanceof PartSeat){
 				riderSeats.put(passenger.getEntityId(), (PartSeat) part);
 			}else{
-				MTS.MTSLog.error("ERROR: NO SEAT FOUND WHEN LINKING RIDER TO SEAT IN VEHICLE!");
+				FileInterface.logError("ERROR: NO SEAT FOUND WHEN LINKING RIDER TO SEAT IN VEHICLE!");
 				if(!world.isRemote){
 					passenger.dismountRidingEntity();
 				}
@@ -252,7 +254,7 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 		Vec3d lookVec = entity.getLook(1.0F);
 		Vec3d hitVec = entity.getPositionVector().addVector(0, entity.getEyeHeight(), 0);
 		for(float f=1.0F; f<4.0F; f += 0.1F){
-			for(APart part : this.getVehicleParts()){
+			for(APart part : parts){
 				if(part.getAABBWithOffset(Vec3d.ZERO).contains(hitVec)){
 					return part;
 				}
@@ -271,7 +273,7 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 		riderSeats.put(rider.getEntityId(), seat);
 		rider.startRiding(this, true);
 		//Set the player's yaw to the same yaw as the vehicle to ensure we don't have 360+ rotations to deal with.
-		rider.rotationYaw =  (float) (this.rotationYaw + seat.partRotation.y);
+		rider.rotationYaw =  (float) (this.rotationYaw + seat.currentRotation.y);
 		if(!world.isRemote){
 			MTS.MTSNet.sendToAll(new PacketPartSeatRiderChange(seat, rider, true));
 		}
@@ -284,7 +286,7 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 		try{
 			ObfuscationReflectionHelper.setPrivateValue(Entity.class, rider, null, ridingEntityNames);
 		}catch (Exception e){
-			MTS.MTSLog.fatal("ERROR IN VEHICLE RIDER REFLECTION!");
+			FileInterface.logError("ERROR IN VEHICLE RIDER REFLECTION!");
 			return;
    	    }
 		
@@ -293,11 +295,11 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 		rider.setSneaking(false);
 		if(!world.isRemote){
 			Vec3d placePosition;
-			PackPart packPart = this.getPackDefForLocation(seat.offset.x, seat.offset.y, seat.offset.z);
+			PackPart packPart = this.getPackDefForLocation(seat.baseOffset.x, seat.baseOffset.y, seat.baseOffset.z);
 			if(packPart.dismountPos != null){
 				placePosition = RotationSystem.getRotatedPoint(new Vec3d(packPart.dismountPos[0], packPart.dismountPos[1], packPart.dismountPos[2]), this.rotationPitch, this.rotationYaw, this.rotationRoll).add(this.getPositionVector());
 			}else{
-				placePosition = RotationSystem.getRotatedPoint(seat.offset.addVector(seat.offset.x > 0 ? 2 : -2, 0, 0), this.rotationPitch, this.rotationYaw, this.rotationRoll).add(this.getPositionVector());	
+				placePosition = RotationSystem.getRotatedPoint(seat.currentOffset.addVector(seat.currentOffset.x > 0 ? 2 : -2, 0, 0), this.rotationPitch, this.rotationYaw, this.rotationRoll).add(this.getPositionVector());	
 			}
 			AxisAlignedBB collisionDetectionBox = new AxisAlignedBB(new BlockPos(placePosition));
 			if(!world.collidesWithAnyBlock(collisionDetectionBox)){
@@ -326,20 +328,15 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 	public void destroyAtPosition(double x, double y, double z){
 		this.setDead();
 		//Remove all parts from the vehicle and place them as items.
-		for(APart part : getVehicleParts()){
-			if(part.getItemForPart() != null){
-				ItemStack partStack = new ItemStack(part.getItemForPart());
-				NBTTagCompound stackTag = part.getPartNBTTag();
-				if(stackTag != null){
-					partStack.setTagCompound(stackTag);
-				}
-				world.spawnEntity(new EntityItem(world, part.partPos.x, part.partPos.y, part.partPos.z, partStack));
-			}
+		//Do this by making a copy of the part list to prevent CMEs.
+		for(APart partToRemove : parts.toArray(new APart[parts.size()])){
+			removePart(partToRemove, true);
 		}
 		
 		//Also drop some crafting ingredients as items.
 		double crashItemDropPercentage = ConfigSystem.getDoubleConfig("CrashItemDropPercentage");
-		for(ItemStack craftingStack : PackParserSystem.getMaterials(this.vehicleName)){
+		for(String material : packComponent.getCraftingMaterials()){
+			ItemStack craftingStack = ItemInterface.getStackFromPackMaterial(material);
 			for(byte i=0; i<craftingStack.getCount(); ++i){
 				if(this.rand.nextDouble() < crashItemDropPercentage){
 					world.spawnEntity(new EntityItem(world, this.posX, this.posY, this.posZ, new ItemStack(craftingStack.getItem(), 1, craftingStack.getMetadata())));
@@ -351,14 +348,14 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 	/**
 	 * This code is allow for this vehicle to be "attacked" without an entity present.
 	 * Normally the attack code will check the attacking entity to figure out what was
-	 * attacked on the vehicle, but for some situations this may not be desireable.
+	 * attacked on the vehicle, but for some situations this may not be desirable.
 	 * In particular, this is done for the particle-based bullet system as there are
 	 * no projectile entities to allow the attack system to automatically calculate
 	 * what was attacked on the vehicle.
 	 */
 	public void attackManuallyAtPosition(double x, double y, double z, DamageSource source, float damage){
 		//First check to see if we hit a part.
-		for(APart part : this.getVehicleParts()){
+		for(APart part : parts){
 			if(part.getAABBWithOffset(Vec3d.ZERO).contains(new Vec3d(x, y, z))){
 				part.attackPart(source, damage);
 				return;
@@ -366,7 +363,7 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 		}
 		
 		//We didn't hit a part, so we must have hit a collision box.  Damage the main vehicle instead.
-		if(this.brokenWindows < pack.rendering.numberWindows){
+		if(this.brokenWindows < packComponent.pack.rendering.numberWindows){
 			++brokenWindows;
 			this.playSound(SoundEvents.BLOCK_GLASS_BREAK, 2.0F, 1.0F);
 			MTS.MTSNet.sendToAll(new PacketVehicleWindowBreak(this));
@@ -376,8 +373,8 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 	
 	
 	protected float getCurrentMass(){
-		int currentMass = pack.general.emptyMass;
-		for(APart part : this.getVehicleParts()){
+		int currentMass = packComponent.pack.general.emptyMass;
+		for(APart part : parts){
 			if(part instanceof PartCrate){
 				currentMass += calculateInventoryWeight(((PartCrate) part).crateInventory);
 			}else if(part instanceof PartBarrel){
@@ -464,9 +461,9 @@ public abstract class EntityVehicleB_Existing extends EntityVehicleA_Base{
 			Entity rider = this.getPassengers().get(i);
 			PartSeat seat = this.getSeatForRider(rider);
 			if(seat != null){
-				tagCompound.setDouble("Seat" + String.valueOf(i) + "0", seat.offset.x);
-				tagCompound.setDouble("Seat" + String.valueOf(i) + "1", seat.offset.y);
-				tagCompound.setDouble("Seat" + String.valueOf(i) + "2", seat.offset.z);
+				tagCompound.setDouble("Seat" + String.valueOf(i) + "0", seat.baseOffset.x);
+				tagCompound.setDouble("Seat" + String.valueOf(i) + "1", seat.baseOffset.y);
+				tagCompound.setDouble("Seat" + String.valueOf(i) + "2", seat.baseOffset.z);
 			}
 		}
 		return tagCompound;

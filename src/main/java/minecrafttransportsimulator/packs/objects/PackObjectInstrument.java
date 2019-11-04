@@ -1,9 +1,9 @@
-package minecrafttransportsimulator.packloading;
+package minecrafttransportsimulator.packs.objects;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PackInstrumentObject{
+public class PackObjectInstrument{
     public PackInstrumentDefinition general = new PackInstrumentDefinition();
     public List<PackInstrumentComponent> components = new ArrayList<PackInstrumentComponent>();
 

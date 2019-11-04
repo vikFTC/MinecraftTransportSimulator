@@ -7,6 +7,7 @@ import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.baseclasses.VehicleAxisAlignedBB;
 import minecrafttransportsimulator.baseclasses.VehicleGroundDeviceBox;
 import minecrafttransportsimulator.packets.vehicles.PacketVehicleDeltas;
+import minecrafttransportsimulator.packs.components.PackComponentVehicle;
 import minecrafttransportsimulator.systems.ConfigSystem;
 import minecrafttransportsimulator.systems.RotationSystem;
 import minecrafttransportsimulator.vehicles.parts.APart;
@@ -63,20 +64,20 @@ public abstract class EntityVehicleD_Moving extends EntityVehicleC_Colliding{
 		super(world);
 	}
 	
-	public EntityVehicleD_Moving(World world, float posX, float posY, float posZ, float playerRotation, String vehicleName){
-		super(world, posX, posY, posZ, playerRotation, vehicleName);
+	public EntityVehicleD_Moving(World world, float posX, float posY, float posZ, float playerRotation, PackComponentVehicle packComponent){
+		super(world, posX, posY, posZ, playerRotation, packComponent);
 	}
 	
 	@Override
 	public void onEntityUpdate(){
 		super.onEntityUpdate();
-		if(pack != null){
+		if(packComponent != null){
 			//Populate the ground device lists for use in the methods here.
 			//We need to get which ground devices are in which quadrant,
 			//as well as which ground devices are on the ground.
 			//This needs to be done before movement calculations so we can do checks during them.
 			groundedGroundDevices.clear();
-			for(APart part : this.getVehicleParts()){
+			for(APart part : parts){
 				if(part instanceof APartGroundDevice){
 					if(((APartGroundDevice) part).isOnGround()){
 						groundedGroundDevices.add((APartGroundDevice) part);
@@ -107,7 +108,7 @@ public abstract class EntityVehicleD_Moving extends EntityVehicleC_Colliding{
 			}
 			
 			//Finally, update parts.
-			for(APart part : this.getVehicleParts()){
+			for(APart part : parts){
 				part.updatePart();
 			}
 		}
@@ -806,9 +807,9 @@ public abstract class EntityVehicleD_Moving extends EntityVehicleC_Colliding{
 			for(APartGroundDevice groundDevice : this.groundedGroundDevices){
 				float frictionLoss = groundDevice.getFrictionLoss();
 				//Do we have enough friction to change yaw?
-				if(groundDevice.turnsWithSteer && groundDevice.getLateralFriction() - frictionLoss > 0){
+				if(groundDevice.vehicleDefinition.turnsWithSteer && groundDevice.getLateralFriction() - frictionLoss > 0){
 					turningFactor += groundDevice.getLateralFriction() - frictionLoss;
-					turningDistance = (float) Math.max(turningDistance, Math.abs(groundDevice.offset.z));
+					turningDistance = (float) Math.max(turningDistance, Math.abs(groundDevice.currentOffset.z));
 				}
 			}
 			if(turningFactor > 0){

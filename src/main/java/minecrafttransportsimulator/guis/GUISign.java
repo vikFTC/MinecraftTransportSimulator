@@ -11,7 +11,7 @@ import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.blocks.pole.BlockPoleSign;
 import minecrafttransportsimulator.blocks.pole.TileEntityPoleSign;
 import minecrafttransportsimulator.packets.tileentities.PacketSignChange;
-import minecrafttransportsimulator.packloading.PackSignObject;
+import minecrafttransportsimulator.packs.objects.PackObjectSign;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -46,7 +46,7 @@ public class GUISign extends GuiScreen{
 	private String prevSignName = "";
 	private String nextSignName = "";
 	
-	private PackSignObject pack;
+	private PackObjectSign pack;
 		
 	public GUISign(BlockPoleSign block, EntityPlayer player){
 		this.decor = (TileEntityPoleSign) player.world.getTileEntity(block.lastClickedPos);

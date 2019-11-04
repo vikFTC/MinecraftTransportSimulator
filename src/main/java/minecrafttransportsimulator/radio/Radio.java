@@ -8,7 +8,7 @@ import java.util.List;
 
 import javazoom.jlgui.basicplayer.BasicPlayer;
 import javazoom.jlgui.basicplayer.BasicPlayerException;
-import minecrafttransportsimulator.MTS;
+import mts_to_mc.interfaces.FileInterface;
 
 /**Base class for radios.  Used to provide a common set of tools for all radio implementations.
 *
@@ -53,9 +53,8 @@ public class Radio{
 			selectedSource = url.toString();
 			return true;
 		}catch(Exception e){
-			MTS.MTSLog.error("ERROR: BASICPLAYER URL PLAY CODE HAS FAULTED.");
-			MTS.MTSLog.error(e.getMessage());
-			e.printStackTrace();
+			FileInterface.logError("ERROR: BASICPLAYER URL PLAY CODE HAS FAULTED.");
+			FileInterface.logError(e.getMessage());
 			return false;
 		}
 	}
@@ -69,9 +68,8 @@ public class Radio{
 			selectedSource = "Streaming";
 			return true;
 		}catch(Exception e){
-			MTS.MTSLog.error("ERROR: BASICPLAYER INTERNAL PLAY CODE HAS FAULTED.");
-			MTS.MTSLog.error(e.getMessage());
-			e.printStackTrace();
+			FileInterface.logError("ERROR: BASICPLAYER INTERNAL PLAY CODE HAS FAULTED.");
+			FileInterface.logError(e.getMessage());
 			return false;
 		}
 	}
@@ -107,9 +105,8 @@ public class Radio{
 		try{
 			player.stop();
 		}catch(Exception e){
-			MTS.MTSLog.error("ERROR: BASICPLAYER STOP CODE HAS FAULTED.");
-			MTS.MTSLog.error(e.getMessage());
-			e.printStackTrace();
+			FileInterface.logError("ERROR: BASICPLAYER STOP CODE HAS FAULTED.");
+			FileInterface.logError(e.getMessage());
 		}
 	}
 	
@@ -151,9 +148,8 @@ public class Radio{
 				return false;
 			}
 		}catch(Exception e){
-			MTS.MTSLog.error("ERROR: BASICPLAYER INTERNAL UPDATED CODE HAS FAULTED.");
-			MTS.MTSLog.error(e.getMessage());
-			e.printStackTrace();
+			FileInterface.logError("ERROR: BASICPLAYER INTERNAL UPDATED CODE HAS FAULTED.");
+			FileInterface.logError(e.getMessage());
 			stopPlaying();
 		}
 		return true;
@@ -164,9 +160,8 @@ public class Radio{
 		try{
 			player.setGain(volume > 1 ? 1 : volume);
 		}catch(BasicPlayerException e){
-			MTS.MTSLog.error("ERROR: BASICPLAYER VOLUME CODE HAS FAULTED.");
-			MTS.MTSLog.error(e.getMessage());
-			e.printStackTrace();
+			FileInterface.logError("ERROR: BASICPLAYER VOLUME CODE HAS FAULTED.");
+			FileInterface.logError(e.getMessage());
 			stopPlaying();
 		}
 	}

@@ -1,9 +1,9 @@
-package minecrafttransportsimulator.packloading;
+package minecrafttransportsimulator.packs.objects;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PackVehicleObject{
+public class PackObjectVehicle{
 	public PackGeneralConfig general;
 	public List<PackFileDefinitions> definitions = new ArrayList<PackFileDefinitions>();
     public PackMotorizedConfig motorized;

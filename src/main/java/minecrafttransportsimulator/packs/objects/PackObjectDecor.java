@@ -1,6 +1,6 @@
-package minecrafttransportsimulator.packloading;
+package minecrafttransportsimulator.packs.objects;
 
-public class PackDecorObject{
+public class PackObjectDecor{
 	public DecorGeneralConfig general;
 
     public class DecorGeneralConfig{

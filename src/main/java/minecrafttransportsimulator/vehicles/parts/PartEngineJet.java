@@ -3,7 +3,8 @@ package minecrafttransportsimulator.vehicles.parts;
 import java.util.List;
 
 import minecrafttransportsimulator.dataclasses.DamageSources.DamageSourceJet;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.systems.ConfigSystem;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleF_Air;
@@ -14,8 +15,8 @@ import net.minecraft.nbt.NBTTagCompound;
 public class PartEngineJet extends APartEngine{
 	private final EntityVehicleF_Air aircraft;
 
-	public PartEngineJet(EntityVehicleE_Powered vehicle, PackPart packPart, String partName, NBTTagCompound dataTag){
-		super(vehicle, packPart, partName, dataTag);
+	public PartEngineJet(EntityVehicleE_Powered vehicle, PackComponentPart packComponent, PackPart vehicleDefinition, NBTTagCompound dataTag){
+		super(vehicle, packComponent, vehicleDefinition, dataTag);
 		this.aircraft = (EntityVehicleF_Air) vehicle;
 	}
 	
@@ -23,11 +24,11 @@ public class PartEngineJet extends APartEngine{
 	public void updatePart(){
 		super.updatePart();
 		if(state.running){
-			double engineTargetRPM = aircraft.throttle/100F*(pack.engine.maxRPM - engineStartRPM*1.25 - hours*10) + engineStartRPM*1.25;
+			double engineTargetRPM = aircraft.throttle/100F*(packComponent.pack.engine.maxRPM - engineStartRPM*1.25 - hours*10) + engineStartRPM*1.25;
 			double engineRPMDifference = engineTargetRPM - RPM;
 			//This is governed by the core, so use the bypass ratio and air density to calculate how fast this thing spools up.
 			//Smaller cores and higher altitudes will cause spool times to increase due to lack of airflow to push.
-			RPM += pack.engine.fuelConsumption*engineRPMDifference/(10 + pack.engine.gearRatios[0])/vehicle.airDensity;
+			RPM += packComponent.pack.engine.fuelConsumption*engineRPMDifference/(10 + packComponent.pack.engine.gearRatios[0])/vehicle.airDensity;
 		}else if(!state.esOn){
 			RPM = Math.max(RPM + (aircraft.velocity - 0.0254*250*RPM/60/20)*15 - 10, 0);
 		}
@@ -39,7 +40,7 @@ public class PartEngineJet extends APartEngine{
 				if(!collidedEntites.isEmpty()){
 					Entity attacker = null;
 					for(Entity passenger : vehicle.getPassengers()){
-						if(vehicle.getSeatForRider(passenger).isController){
+						if(vehicle.getSeatForRider(passenger).vehicleDefinition.isController){
 							attacker = passenger;
 							break;
 						}
@@ -56,7 +57,7 @@ public class PartEngineJet extends APartEngine{
 				if(!collidedEntites.isEmpty()){
 					Entity attacker = null;
 					for(Entity passenger : vehicle.getPassengers()){
-						if(vehicle.getSeatForRider(passenger).isController){
+						if(vehicle.getSeatForRider(passenger).vehicleDefinition.isController){
 							attacker = passenger;
 							break;
 						}
@@ -85,14 +86,14 @@ public class PartEngineJet extends APartEngine{
 			//We then multiply that by the RPM and the fuel consumption to get the raw power produced
 			//by the core of the engine.  This is speed-independent as the core will ALWAYS accelerate air.
 			//Note that due to a lack of jet physics formulas available, this is "hacky math".
-			double safeRPMFactor = RPM/getSafeRPMFromMax(pack.engine.maxRPM);
-			double coreContribution = Math.max(10*vehicle.airDensity*pack.engine.fuelConsumption*safeRPMFactor - pack.engine.gearRatios[0], 0);
+			double safeRPMFactor = RPM/getSafeRPMFromMax(packComponent.pack.engine.maxRPM);
+			double coreContribution = Math.max(10*vehicle.airDensity*packComponent.pack.engine.fuelConsumption*safeRPMFactor - packComponent.pack.engine.gearRatios[0], 0);
 			//The fan portion is calculated similarly to how propellers are calculated.
 			//This takes into account the air density, and relative speed of the engine versus the fan's desired speed.
 			//Again, this is "hacky math", as for some reason there's no data on fan pitches.
 			//In this case, however, we don't care about the fuelConsumption as that's only used by the core.
 			double fanVelocityFactor = (0.0254*250*RPM/60/20 - aircraft.velocity)/200D;
-			double fanContribution = 10*vehicle.airDensity*safeRPMFactor*fanVelocityFactor*pack.engine.gearRatios[0];
+			double fanContribution = 10*vehicle.airDensity*safeRPMFactor*fanVelocityFactor*packComponent.pack.engine.gearRatios[0];
 			return aircraft.reverseThrust ? -(coreContribution + fanContribution) : coreContribution + fanContribution;
 		}else{
 			return 0;

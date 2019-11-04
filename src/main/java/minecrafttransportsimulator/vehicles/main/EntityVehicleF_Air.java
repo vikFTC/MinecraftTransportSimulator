@@ -4,6 +4,7 @@ import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.packets.control.AileronPacket;
 import minecrafttransportsimulator.packets.control.ElevatorPacket;
 import minecrafttransportsimulator.packets.control.RudderPacket;
+import minecrafttransportsimulator.packs.components.PackComponentVehicle;
 import minecrafttransportsimulator.systems.RotationSystem;
 import minecrafttransportsimulator.vehicles.parts.APartEngine;
 import net.minecraft.nbt.NBTTagCompound;
@@ -55,8 +56,8 @@ public abstract class EntityVehicleF_Air extends EntityVehicleE_Powered{
 		super(world);
 	}
 	
-	public EntityVehicleF_Air(World world, float posX, float posY, float posZ, float rotation, String name){
-		super(world, posX, posY, posZ, rotation, name);
+	public EntityVehicleF_Air(World world, float posX, float posY, float posZ, float rotation, PackComponentVehicle packComponent){
+		super(world, posX, posY, posZ, rotation, packComponent);
 	}
 	
 	@Override
@@ -67,7 +68,7 @@ public abstract class EntityVehicleF_Air extends EntityVehicleE_Powered{
 			--reversePercent;
 		}
 		
-		momentRoll = (float) (pack.general.emptyMass*(1.5F+(fuel/10000F)));
+		momentRoll = (float) (packComponent.pack.general.emptyMass*(1.5F+(fuel/10000F)));
 		momentPitch = (float) (2*currentMass);
 		momentYaw = (float) (3*currentMass);
 		
@@ -92,7 +93,6 @@ public abstract class EntityVehicleF_Air extends EntityVehicleE_Powered{
 			if(engine != null){
 				thrust = engine.getForceOutput();
 				thrustForce += thrust;
-				thrustTorque += thrust*engine.offset.x;
 			}
 		}
 		gravitationalForce = currentMass*(9.8/400);

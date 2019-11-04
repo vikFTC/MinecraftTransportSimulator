@@ -1,4 +1,4 @@
-package minecrafttransportsimulator.packloading;
+package minecrafttransportsimulator.packs;
 
 public class PackInfoObject{
 	public String packID;

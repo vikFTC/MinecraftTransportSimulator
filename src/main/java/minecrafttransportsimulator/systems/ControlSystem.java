@@ -285,8 +285,8 @@ public final class ControlSystem{
 	private static void controlGun(EntityVehicleE_Powered vehicle, ControlsKeyboard gun){
 		PartSeat seat = vehicle.getSeatForRider(Minecraft.getMinecraft().player);
 		if(seat != null){
-			if(seat.isController){
-				for(APart part : vehicle.getVehicleParts()){
+			if(seat.vehicleDefinition.isController){
+				for(APart part : vehicle.parts){
 					if(part instanceof APartGun && part.parentPart == null){
 						MTS.MTSNet.sendToServer(new PacketPartGunSignal((APartGun) part, Minecraft.getMinecraft().player.getEntityId(), gun.isPressed()));
 					}
@@ -349,7 +349,7 @@ public final class ControlSystem{
 		}		
 		
 		//Check flaps.
-		if(aircraft.pack.plane != null && aircraft.pack.plane.hasFlaps){
+		if(aircraft.packComponent.pack.plane != null && aircraft.packComponent.pack.plane.hasFlaps){
 			if(ControlsKeyboard.AIRCRAFT_FLAPS_U.isPressed()){
 				MTS.MTSNet.sendToServer(new FlapPacket(aircraft.getEntityId(), (byte) -50));
 			}

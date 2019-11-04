@@ -8,7 +8,7 @@ import org.lwjgl.opengl.GL11;
 
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.blocks.pole.TileEntityPoleSign;
-import minecrafttransportsimulator.packloading.PackSignObject;
+import minecrafttransportsimulator.packs.objects.PackObjectSign;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -93,7 +93,7 @@ public class RenderPoleSign extends TileEntitySpecialRenderer<TileEntityPoleSign
 		GL11.glEnd();
 		
 		//Now render the text.
-		PackSignObject pack = PackParserSystem.getSign(sign.definition);
+		PackObjectSign pack = PackParserSystem.getSign(sign.definition);
 		if(pack != null){
 			if(pack.general.textLines != null){
 				if(!fontMap.containsKey(pack.general.font)){

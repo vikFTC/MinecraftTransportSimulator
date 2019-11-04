@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import minecrafttransportsimulator.MTS;
-import minecrafttransportsimulator.dataclasses.MTSRegistry;
 import minecrafttransportsimulator.packets.general.PacketBulletHit;
-import minecrafttransportsimulator.packloading.PackPartObject.PartBulletConfig;
-import minecrafttransportsimulator.systems.PackParserSystem;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
 import minecrafttransportsimulator.systems.RotationSystem;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import net.minecraft.block.state.IBlockState;
@@ -36,8 +34,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public final class PartBullet extends Particle{
-	private final String bulletName;
-	private final PartBulletConfig bulletPackData;
+	private final PackComponentPart packComponent;
 	private final int playerID;
 	private final EntityVehicleE_Powered vehicle;
 	
@@ -46,32 +43,31 @@ public final class PartBullet extends Particle{
     private final float minV;
     private final float maxV;
 	
-    public PartBullet(World world, double x, double y, double z, double motionX, double motionY, double motionZ, String bulletName, int playerID, EntityVehicleE_Powered vehicle){
+    public PartBullet(World world, double x, double y, double z, double motionX, double motionY, double motionZ, PackComponentPart packComponent, int playerID, EntityVehicleE_Powered vehicle){
     	super(world, x, y, z);
         //Set basic properties.
     	this.particleMaxAge = 60;
-        this.bulletName = bulletName;
-        this.bulletPackData = PackParserSystem.getPartPack(this.bulletName).bullet;
+        this.packComponent = packComponent;
         
         //Set rendering properties.
-        if(bulletPackData.type.equals("tracer")){
+        if(packComponent.pack.bullet.type.equals("tracer")){
         	this.setRBGColorF(1.0F, 0.0F, 0.0F);
         }else{
         	this.setRBGColorF(1.0F, 1.0F, 1.0F);
         }
-        this.setParticleTexture(Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getParticleIcon(MTSRegistry.partItemMap.get(bulletName), 0));
+        this.setParticleTexture(Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getParticleIcon(packComponent.item, 0));
         float vSpan = this.particleTexture.getMaxV() - this.particleTexture.getMinV();
 		float vMid = this.particleTexture.getMinV() + vSpan/2F;
 		minU = this.particleTexture.getMinU();
         maxU = this.particleTexture.getMaxU();
-        minV = vMid - vSpan*bulletPackData.texturePercentage/2F;
-        maxV = vMid + vSpan*bulletPackData.texturePercentage/2F;
+        minV = vMid - vSpan*packComponent.pack.bullet.texturePercentage/2F;
+        maxV = vMid + vSpan*packComponent.pack.bullet.texturePercentage/2F;
         
         //Set physical state and runtime properties.
         this.motionX = motionX;
         this.motionY = motionY;
         this.motionZ = motionZ;
-        this.setSize(bulletPackData.diameter/1000F, bulletPackData.diameter/1000F);
+        this.setSize(packComponent.pack.bullet.diameter/1000F, packComponent.pack.bullet.diameter/1000F);
         this.setBoundingBox(new AxisAlignedBB(posX - width/2F, posY - height/2F, posZ - width/2F, posX + width/2F, posY + height/2F, posZ + width/2F));
         this.playerID = playerID;
         this.vehicle = vehicle;
@@ -129,13 +125,13 @@ public final class PartBullet extends Particle{
 				//Doing this prevents all clients from sending collision packets to the server.
 				if(collidedEntity != null){
 					if(this.playerID == Minecraft.getMinecraft().player.getEntityId()){
-						MTS.MTSNet.sendToServer(new PacketBulletHit(this.posX + motionX*d/increments, this.posY + motionY*d/increments, this.posZ + motionZ*d/increments, velocity, this.bulletName, this.playerID, collidedEntity.getEntityId()));
+						MTS.MTSNet.sendToServer(new PacketBulletHit(this.posX + motionX*d/increments, this.posY + motionY*d/increments, this.posZ + motionZ*d/increments, velocity, packComponent.packID, packComponent.name, this.playerID, collidedEntity.getEntityId()));
 					}
 					this.setExpired();
 					return;
 				}else if(collidedBlockPos != null){
 					if(this.playerID == Minecraft.getMinecraft().player.getEntityId()){
-						MTS.MTSNet.sendToServer(new PacketBulletHit(collidedBlockPos.getX(), collidedBlockPos.getY(), collidedBlockPos.getZ(), velocity, this.bulletName, this.playerID, -1));
+						MTS.MTSNet.sendToServer(new PacketBulletHit(collidedBlockPos.getX(), collidedBlockPos.getY(), collidedBlockPos.getZ(), velocity, packComponent.packID, packComponent.name, this.playerID, -1));
 					}
 					this.setExpired();
 					return;
@@ -165,14 +161,14 @@ public final class PartBullet extends Particle{
         float renderPosZ = (float)(this.prevPosZ + (this.posZ - this.prevPosZ) * (double)partialTicks - interpPosZ);
         
         //Get brightness information.
-        int brightness = this.bulletPackData.type.equals("tracer") ? (15 << 20 | 15 << 4) : getBrightnessForRender(partialTicks); 
+        int brightness = this.packComponent.pack.bullet.type.equals("tracer") ? (15 << 20 | 15 << 4) : getBrightnessForRender(partialTicks); 
         int skyLight = brightness >> 16 & 65535;
         int blockLight = brightness & 65535;
         
         //Get the texture points as if we only have velocity in the +Z direction.
         //We need two sets of 4.  One for the side view, and one for the top cross-view.
         //Ensure we have a radius of a minimum of 2 pixels for proper rendering.
-        float realRadius = Math.max(bulletPackData.diameter/1000F/2F, 0.0625F);
+        float realRadius = Math.max(packComponent.pack.bullet.diameter/1000F/2F, 0.0625F);
         Vec3d[] texturePointCoords = new Vec3d[]{
         	new Vec3d(0, -realRadius, -realRadius),
         	new Vec3d(0, realRadius, -realRadius),

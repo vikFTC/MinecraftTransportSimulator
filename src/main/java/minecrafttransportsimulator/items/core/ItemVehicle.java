@@ -1,18 +1,16 @@
 package minecrafttransportsimulator.items.core;
 
-import java.lang.reflect.Constructor;
-
-import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.baseclasses.VehicleAxisAlignedBB;
-import minecrafttransportsimulator.dataclasses.MTSRegistry;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackCollisionBox;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
-import minecrafttransportsimulator.systems.PackParserSystem;
+import minecrafttransportsimulator.packs.PackLoader;
+import minecrafttransportsimulator.packs.components.PackComponentInstrument;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.components.PackComponentVehicle;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackCollisionBox;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
-import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered.VehicleInstrument;
 import minecrafttransportsimulator.vehicles.parts.APart;
+import mts_to_mc.interfaces.FileInterface;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -22,7 +20,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class ItemVehicle extends AItemPackComponent{
+public class ItemVehicle extends AItemPackComponent<PackComponentVehicle>{
 	
 	@Override
 	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
@@ -31,12 +29,9 @@ public class ItemVehicle extends AItemPackComponent{
 			if(heldStack.getItem() != null){
 				//We want to spawn above this block.
 				pos = pos.up();
-				String vehicleToSpawnName = ((ItemVehicle) heldStack.getItem()).vehicleName;
 				try{
 					//First construct the class.
-					Class<? extends EntityVehicleE_Powered> vehicleClass = PackParserSystem.getVehicleClass(vehicleToSpawnName);
-					Constructor<? extends EntityVehicleE_Powered> construct = vehicleClass.getConstructor(World.class, float.class, float.class, float.class, float.class, String.class);
-					EntityVehicleE_Powered newVehicle = construct.newInstance(world, pos.getX(), pos.getY(), pos.getZ(), player.rotationYaw, vehicleToSpawnName);
+					EntityVehicleE_Powered newVehicle = packComponent.createVehicle(world, pos.getX(), pos.getY(), pos.getZ(), player.rotationYaw, packComponent);
 					
 					//Now that the class exists, use the NTB data from this item to add back components.
 					if(heldStack.hasTagCompound()){
@@ -47,13 +42,12 @@ public class ItemVehicle extends AItemPackComponent{
 							try{
 								NBTTagCompound partTag = partTagList.getCompoundTagAt(i);
 								PackPart packPart = newVehicle.getPackDefForLocation(partTag.getDouble("offsetX"), partTag.getDouble("offsetY"), partTag.getDouble("offsetZ"));
-								Class<? extends APart> partClass = PackParserSystem.getPartPartClass(partTag.getString("partName"));
-								Constructor<? extends APart> partConstruct = partClass.getConstructor(EntityVehicleE_Powered.class, PackPart.class, String.class, NBTTagCompound.class);
-								APart savedPart = partConstruct.newInstance((EntityVehicleE_Powered) newVehicle, packPart, partTag.getString("partName"), partTag);
+								PackComponentPart partComponent = PackLoader.getPartComponentByName(tagCompound.getString("partPack"), tagCompound.getString("partName"));
+								APart savedPart = partComponent.createPart(newVehicle, partComponent, packPart, partTag);
 								newVehicle.addPart(savedPart, true);
 							}catch(Exception e){
-								MTS.MTSLog.error("ERROR IN LOADING PART FROM NBT!");
-								e.printStackTrace();
+								FileInterface.logError("ERROR IN LOADING PART FROM NBT!");
+								FileInterface.logError(e.getMessage());
 							}
 						}
 						
@@ -71,13 +65,14 @@ public class ItemVehicle extends AItemPackComponent{
 						//E-level
 						newVehicle.fuel=tagCompound.getDouble("fuel");
 						newVehicle.electricPower=tagCompound.getDouble("electricPower");
-						for(byte i = 0; i<newVehicle.pack.motorized.instruments.size(); ++i){
+						for(byte i = 0; i<newVehicle.packComponent.pack.motorized.instruments.size(); ++i){
 							if(tagCompound.hasKey("instrumentInSlot" + i)){
-								String instrumentInSlot = tagCompound.getString("instrumentInSlot" + i);
-								VehicleInstrument instrument = new VehicleInstrument(instrumentInSlot);
-								//Check to prevent loading of faulty instruments for the wrong vehicle due to updates or stupid people.
-								if(instrument != null && instrument.pack.general.validVehicles.contains(newVehicle.pack.general.type)){
-									newVehicle.setInstrumentInSlot(i, instrumentInSlot);
+								if(tagCompound.hasKey("instrumentInSlot" + i)){
+									PackComponentInstrument instrument = PackLoader.getInstrumentComponentByName(tagCompound.getString("instrumentInSlot" + i + "_pack"), tagCompound.getString("instrumentInSlot" + i + "_name"));
+									//Check to prevent loading of faulty instruments for the wrong vehicle due to updates.
+									if(instrument != null && instrument.pack.general.validVehicles.contains(packComponent.pack.general.type)){
+										newVehicle.instruments.set(i, instrument);
+									}
 								}
 							}
 						}
@@ -86,13 +81,13 @@ public class ItemVehicle extends AItemPackComponent{
 					//Get how far above the ground the vehicle needs to be, and move it to that position.
 					//First boost Y based on collision boxes.
 					double minHeight = 0;
-					for(PackCollisionBox collisionBox : newVehicle.pack.collision){
+					for(PackCollisionBox collisionBox : newVehicle.packComponent.pack.collision){
 						minHeight = Math.min(collisionBox.pos[1] - collisionBox.height/2F, minHeight);
 					}
 					
 					//Next, boost based on parts.
-					for(APart part : newVehicle.getVehicleParts()){
-						minHeight = Math.min(part.offset.x - part.getHeight()/2F, minHeight);
+					for(APart part : newVehicle.parts){
+						minHeight = Math.min(part.currentOffset.x - part.getHeight()/2F, minHeight);
 					}
 					
 					//Apply the boost, and check collisions.
@@ -111,8 +106,8 @@ public class ItemVehicle extends AItemPackComponent{
 						player.inventory.clearMatchingItems(heldStack.getItem(), heldStack.getItemDamage(), 1, heldStack.getTagCompound());
 					}
 				}catch(Exception e){
-					MTS.MTSLog.error("ERROR SPAWING VEHICLE ENTITY!");
-					e.printStackTrace();
+					FileInterface.logError("ERROR SPAWING VEHICLE ENTITY!");
+					FileInterface.logError(e.getMessage());
 				}
 			}
 		}

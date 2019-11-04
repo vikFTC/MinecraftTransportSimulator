@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import minecrafttransportsimulator.packs.components.PackComponentInstrument;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
@@ -11,7 +12,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemInstrument extends AItemPackComponent{
+public class ItemInstrument extends AItemPackComponent<PackComponentInstrument>{
 	
 	@Override
 	@SideOnly(Side.CLIENT)

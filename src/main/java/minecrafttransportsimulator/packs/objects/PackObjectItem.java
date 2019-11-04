@@ -1,6 +1,6 @@
-package minecrafttransportsimulator.packloading;
+package minecrafttransportsimulator.packs.objects;
 
-public class PackItemObject{
+public class PackObjectItem{
 	public PartGeneralConfig general;
 
     public class PartGeneralConfig{

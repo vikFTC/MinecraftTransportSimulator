@@ -1,6 +1,6 @@
-package minecrafttransportsimulator.packloading;
+package minecrafttransportsimulator.packs.objects;
 
-public class PackSignObject{
+public class PackObjectSign{
 	public SignGeneralConfig general;
 
     public class SignGeneralConfig{

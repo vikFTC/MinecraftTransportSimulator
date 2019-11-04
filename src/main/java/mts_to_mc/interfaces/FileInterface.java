@@ -4,7 +4,6 @@ import java.io.File;
 
 import org.apache.logging.log4j.Logger;
 
-import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 /**
@@ -12,7 +11,9 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
  * This class is used for interfacing with file systems.  Maintains and stores
  * access to various file directories, such as mod and config folders.  It also
  * contains a reference to the logger that will output debug information
- * with the rest of the game log.
+ * with the rest of the game log, and will run the init() method of 
+ * {@link minecrafttransportsimulator.packs.PackLoader} once the directory
+ * where mods are stored is known.
  *
  * @author don_bruce
  */
@@ -24,11 +25,10 @@ public class FileInterface{
 	private static File musicDirectory;
 	
 	
-	@EventHandler
-	public void preInit(FMLPreInitializationEvent event){
+	public static void init(FMLPreInitializationEvent event){
 		logger = event.getModLog();
 		gameDirectory = new File(event.getModConfigurationDirectory().getParent());
-		modDirectory = new File(event.getSourceFile().getParent());
+		modDirectory = new File(gameDirectory + File.separator + "mods");
 		configDirectory = event.getModConfigurationDirectory();
 		musicDirectory = new File(gameDirectory + File.separator + "mts_music");
 	}

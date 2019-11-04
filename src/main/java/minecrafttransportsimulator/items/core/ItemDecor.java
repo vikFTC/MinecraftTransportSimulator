@@ -2,8 +2,7 @@ package minecrafttransportsimulator.items.core;
 
 import minecrafttransportsimulator.blocks.core.TileEntityDecor;
 import minecrafttransportsimulator.dataclasses.MTSRegistry;
-import minecrafttransportsimulator.packloading.PackDecorObject;
-import minecrafttransportsimulator.systems.PackParserSystem;
+import minecrafttransportsimulator.packs.components.PackComponentDecor;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
@@ -12,7 +11,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class ItemDecor extends AItemPackComponent{
+public class ItemDecor extends AItemPackComponent<PackComponentDecor>{
 	
 	@Override
 	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
@@ -23,22 +22,20 @@ public class ItemDecor extends AItemPackComponent{
 				pos = pos.up();
 				
 				//Based on the block type and light, pick a registered block template.
-				String blockName = ((ItemDecor) heldStack.getItem()).decorName;
-				PackDecorObject pack = PackParserSystem.getDecor(blockName);
-				if(!pack.general.oriented && !pack.general.lighted){
+				if(!packComponent.pack.general.oriented && !packComponent.pack.general.lighted){
 					world.setBlockState(pos, MTSRegistry.decorBasicDark.getDefaultState());
-				}else if(pack.general.oriented && !pack.general.lighted){
+				}else if(packComponent.pack.general.oriented && !packComponent.pack.general.lighted){
 					world.setBlockState(pos, MTSRegistry.decorOrientedDark.getDefaultState());
-				}else if(!pack.general.oriented && pack.general.lighted){
+				}else if(!packComponent.pack.general.oriented && packComponent.pack.general.lighted){
 					world.setBlockState(pos, MTSRegistry.decorBasicLight.getDefaultState());
-				}else if(pack.general.oriented && pack.general.lighted){
+				}else if(packComponent.pack.general.oriented && packComponent.pack.general.lighted){
 					world.setBlockState(pos, MTSRegistry.decorOrientedLight.getDefaultState());
 				}
 				
 				//Get the TE and set states for it.
 				TileEntityDecor decorTile = ((TileEntityDecor) world.getTileEntity(pos));
-				decorTile.decorName = blockName;
-				if(pack.general.oriented){
+				decorTile.decorName = packComponent.name;
+				if(packComponent.pack.general.oriented){
 					decorTile.rotation = (byte) Math.floor(((player.rotationYawHead + 45)%360/90F));
 				}
 		        

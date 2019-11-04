@@ -2,7 +2,8 @@ package minecrafttransportsimulator.vehicles.parts;
 
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.packets.general.PacketChat;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -13,8 +14,8 @@ import net.minecraft.tileentity.TileEntityFurnace;
 public final class PartFurnace extends APart{
 	private final TileEntityFurnaceVehicle fakeFurnace;
 	
-	public PartFurnace(EntityVehicleE_Powered vehicle, PackPart packPart, String partName, NBTTagCompound dataTag){
-		super(vehicle, packPart, partName, dataTag);
+	public PartFurnace(EntityVehicleE_Powered vehicle, PackComponentPart packComponent, PackPart vehicleDefinition, NBTTagCompound dataTag){
+		super(vehicle, packComponent, vehicleDefinition, dataTag);
 		//Make sure we have registered our fake furnace.  If not, the game won't save it.
 		if(TileEntity.getKey(TileEntityFurnaceVehicle.class) == null){
 			TileEntity.register("furnace_vehicle", TileEntityFurnaceVehicle.class);

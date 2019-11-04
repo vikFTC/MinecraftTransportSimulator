@@ -4,9 +4,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import minecrafttransportsimulator.packloading.PackLoader;
-import minecrafttransportsimulator.packloading.PackPartObject;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.vehicles.parts.APartEngine;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -23,7 +21,7 @@ public abstract class AItemPartEngine extends AItemPart{
 	
 	@Override
 	public boolean isPartValidForPackDef(PackPart packPart){
-		float fuelConsumption = PackLoader.partPackMap.get(component).engine.fuelConsumption;
+		float fuelConsumption = packComponent.pack.engine.fuelConsumption;
 		return packPart.minValue <= fuelConsumption && packPart.maxValue >= fuelConsumption ? super.isPartValidForPackDef(packPart) : false;
 	}
 	
@@ -45,18 +43,16 @@ public abstract class AItemPartEngine extends AItemPart{
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltipLines, ITooltipFlag flagIn){
 		NBTTagCompound stackTag = stack.getTagCompound();
-		PackPartObject pack = PackLoader.partPackMap.get(component); 
-		
 		if(stackTag != null && stackTag.getBoolean("isCreative")){
 			tooltipLines.add(TextFormatting.DARK_PURPLE + I18n.format("info.item.engine.creative"));
 		}
-		tooltipLines.add(I18n.format("info.item.engine.maxrpm") + pack.engine.maxRPM);
-		tooltipLines.add(I18n.format("info.item.engine.maxsaferpm") + APartEngine.getSafeRPMFromMax(pack.engine.maxRPM));
-		tooltipLines.add(I18n.format("info.item.engine.fuelconsumption") + pack.engine.fuelConsumption);
-		tooltipLines.add(I18n.format("info.item.engine.fueltype") + pack.engine.fuelType);
+		tooltipLines.add(I18n.format("info.item.engine.maxrpm") + packComponent.pack.engine.maxRPM);
+		tooltipLines.add(I18n.format("info.item.engine.maxsaferpm") + APartEngine.getSafeRPMFromMax(packComponent.pack.engine.maxRPM));
+		tooltipLines.add(I18n.format("info.item.engine.fuelconsumption") + packComponent.pack.engine.fuelConsumption);
+		tooltipLines.add(I18n.format("info.item.engine.fueltype") + packComponent.pack.engine.fuelType);
 		tooltipLines.add(I18n.format("info.item.engine.hours") + (stackTag != null ? Math.round(stackTag.getDouble("hours")*100D)/100D : 0));
 		
-		addExtraInformation(stack, pack, tooltipLines);
+		addExtraInformation(stack, tooltipLines);
 		
 		if(stackTag != null){
 			if(stackTag.getBoolean("oilLeak")){
@@ -72,5 +68,5 @@ public abstract class AItemPartEngine extends AItemPart{
 	}
 	
 	@SideOnly(Side.CLIENT)
-	protected abstract void addExtraInformation(ItemStack stack, PackPartObject pack, List<String> tooltipLines);
+	protected abstract void addExtraInformation(ItemStack stack, List<String> tooltipLines);
 }

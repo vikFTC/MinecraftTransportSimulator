@@ -1,17 +1,17 @@
 package minecrafttransportsimulator.dataclasses;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import minecrafttransportsimulator.items.core.ItemVehicle;
-import minecrafttransportsimulator.items.parts.AItemPart;
+import minecrafttransportsimulator.packs.PackLoader;
+import minecrafttransportsimulator.packs.components.PackComponentDecor;
+import minecrafttransportsimulator.packs.components.PackComponentInstrument;
+import minecrafttransportsimulator.packs.components.PackComponentItem;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.components.PackComponentVehicle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**Pack-specific creative tab class.  One of each will be made for every pack
  * that loads into MTS.  These are held in the {@link MTSRegistry} along with the
@@ -20,9 +20,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * @author don_bruce
  */
 public final class CreativeTabPack extends CreativeTabs{
+	private final String packID;
 	
-	public CreativeTabPack(String modID){
-		super(modID);
+	public CreativeTabPack(String packID){
+		super(packID);
+		this.packID = packID;
 	}
 	
 	@Override
@@ -31,62 +33,36 @@ public final class CreativeTabPack extends CreativeTabs{
 	}
 
 	@Override
-    @SideOnly(Side.CLIENT)
     public void displayAllRelevantItems(NonNullList<ItemStack> givenList){
 		//This is needed to re-sort the items here to get them in the correct order.
 		//MC will re-order these by ID if we let it.
 		givenList.clear();
-		for(Item item : MTSRegistry.vehicleItemMap.values()){
-			for(CreativeTabs tab : item.getCreativeTabs()){
-				if(tab.equals(this)){
-					item.getSubItems(tab, givenList);
-				}
-			}
+		for(PackComponentVehicle component : PackLoader.vehicleComponents.get(packID)){
+			component.item.getSubItems(this, givenList);
 		}
-		for(Item item : MTSRegistry.partItemMap.values()){
-			for(CreativeTabs tab : item.getCreativeTabs()){
-				if(tab.equals(this)){
-					item.getSubItems(tab, givenList);
-				}
-			}
+		for(PackComponentPart component : PackLoader.partComponents.get(packID)){
+			component.item.getSubItems(this, givenList);
 		}
-		for(Item item : MTSRegistry.instrumentItemMap.values()){
-			for(CreativeTabs tab : item.getCreativeTabs()){
-				if(tab.equals(this)){
-					item.getSubItems(tab, givenList);
-				}
-			}
+		for(PackComponentInstrument component : PackLoader.instrumentComponents.get(packID)){
+			component.item.getSubItems(this, givenList);
 		}
-		for(Item item : MTSRegistry.decorItemMap.values()){
-			for(CreativeTabs tab : item.getCreativeTabs()){
-				if(tab.equals(this)){
-					item.getSubItems(tab, givenList);
-				}
-			}
+		for(PackComponentDecor component : PackLoader.decorComponents.get(packID)){
+			component.item.getSubItems(this, givenList);
 		}
-		for(Item item : MTSRegistry.itemItemMap.values()){
-			for(CreativeTabs tab : item.getCreativeTabs()){
-				if(tab.equals(this)){
-					item.getSubItems(tab, givenList);
-				}
-			}
+		for(PackComponentItem component : PackLoader.itemComponents.get(packID)){
+			component.item.getSubItems(this, givenList);
 		}
     }
 	
 	@Override
-	@SideOnly(Side.CLIENT)
     public ItemStack getIconItemStack(){
-		List<ItemStack> tabStacks = new ArrayList<ItemStack>();
-		for(ItemVehicle vehicleItem : MTSRegistry.vehicleItemMap.values()){
-			if(vehicleItem.getRegistryName().getResourceDomain().equals(getTabLabel())){
-				tabStacks.add(new ItemStack(vehicleItem));
-			}
+		ArrayList<ItemStack> tabStacks = new ArrayList<ItemStack>();
+		for(PackComponentVehicle component : PackLoader.vehicleComponents.get(packID)){
+			tabStacks.add(new ItemStack(component.item));
 		}
 		if(tabStacks.isEmpty()){
-			for(AItemPart partItem : MTSRegistry.partItemMap.values()){
-				if(partItem.getRegistryName().getResourceDomain().equals(getTabLabel())){
-					tabStacks.add(new ItemStack(partItem));
-				}
+			for(PackComponentPart component : PackLoader.partComponents.get(packID)){
+				tabStacks.add(new ItemStack(component.item));
 			}
 		}
 		return tabStacks.get((int) (Minecraft.getMinecraft().world.getTotalWorldTime()/20%tabStacks.size()));

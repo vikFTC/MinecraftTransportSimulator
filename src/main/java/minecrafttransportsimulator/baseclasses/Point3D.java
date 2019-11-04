@@ -23,10 +23,16 @@ public class Point3D{
 		this.z = z;
 	}
 	
-	public void offset(double xOffset, double yOffset, double zOffset){
-		this.x += xOffset;
-		this.y += xOffset;
-		this.z += xOffset;
+	public void set(double x, double y, double z){
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+	
+	public void add(double x, double y, double z){
+		this.x += x;
+		this.y += y;
+		this.z += z;
 	}
 	
 	public double distanceTo(Point3D otherPoint){

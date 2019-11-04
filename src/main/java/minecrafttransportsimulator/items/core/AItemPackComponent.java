@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.dataclasses.CreativeTabPack;
 import minecrafttransportsimulator.dataclasses.MTSRegistry;
-import minecrafttransportsimulator.packloading.PackComponent;
+import minecrafttransportsimulator.packs.components.APackComponent;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
@@ -16,15 +16,16 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class AItemPackComponent extends Item{
-	public PackComponent component;
+public abstract class AItemPackComponent<PackComponent extends APackComponent> extends Item{
+	public PackComponent packComponent;
 	
 	public AItemPackComponent(){
 		super();
 	}
 	
 	public void setPackComponent(PackComponent component){
-		setRegistryName(MTS.MODID + ":" + component.packID + "." + component.name);
+		packComponent = component;
+		setRegistryName(MTS.MODID + ":" + component.packID + "_" + component.name);
 		setUnlocalizedName(component.packID + "." + component.name);
 		//Make a pack tab if we haven't already.
 		if(!MTSRegistry.packTabs.containsKey(component.packID)){

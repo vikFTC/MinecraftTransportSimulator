@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.baseclasses.VehicleSound;
 import minecrafttransportsimulator.baseclasses.VehicleSound.SoundTypes;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleD_Moving;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import minecrafttransportsimulator.vehicles.parts.APartEngine;
+import mts_to_mc.interfaces.FileInterface;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundManager;
 import net.minecraft.entity.player.EntityPlayer;
@@ -133,7 +133,7 @@ public final class VehicleSoundSystem{
 				mcSoundSystem.setVolume(soundTempName, isPlayerInsideEnclosedVehicle() ? volume*0.5F : volume);
 				mcSoundSystem.setPitch(soundTempName, pitch);
 			}catch(Exception e){
-				MTS.MTSLog.error("COULD NOT PLAY VEHICLE SOUND:" + soundName);
+				FileInterface.logError("COULD NOT PLAY VEHICLE SOUND:" + soundName);
 				throw new RuntimeException(e);
 			}
 		}
@@ -171,7 +171,7 @@ public final class VehicleSoundSystem{
 						mcSoundSystem.play(soundID);
 						playingSounds.add(soundID);
 					}catch(Exception e){
-						MTS.MTSLog.error("COULD NOT PLAY LOOPING VEHICLE SOUND:" + sound.getSoundName());
+						FileInterface.logError("COULD NOT PLAY LOOPING VEHICLE SOUND:" + sound.getSoundName());
 						throw new RuntimeException(e);
 					}
 				}
@@ -218,7 +218,7 @@ public final class VehicleSoundSystem{
 			}
 		}
 		if(mcSoundSystem == null){
-			MTS.MTSLog.fatal("ERROR IN SOUND SYSTEM REFLECTION!  COULD NOT FIND SOUNDSYSTEM!");
+			FileInterface.logError("ERROR IN SOUND SYSTEM REFLECTION!  COULD NOT FIND SOUNDSYSTEM!");
 			throw new RuntimeException(lastException);
 		}
 	}
@@ -229,7 +229,7 @@ public final class VehicleSoundSystem{
 	 */
 	public static boolean isPlayerInsideEnclosedVehicle(){
 		if(Minecraft.getMinecraft().player != null && Minecraft.getMinecraft().player.getRidingEntity() instanceof EntityVehicleD_Moving){
-			return !((EntityVehicleD_Moving) Minecraft.getMinecraft().player.getRidingEntity()).pack.general.openTop && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0;
+			return !((EntityVehicleD_Moving) Minecraft.getMinecraft().player.getRidingEntity()).packComponent.pack.general.openTop && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0;
 		}else{
 			return false;
 		}

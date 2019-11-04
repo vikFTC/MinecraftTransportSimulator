@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import minecrafttransportsimulator.MTS;
-import net.minecraft.client.Minecraft;
+import mts_to_mc.interfaces.ClientInterface;
+import mts_to_mc.interfaces.FileInterface;
 
 /**Manager class for all radio operations.  This class is responsible for
  * handling all requests from the radio GUI for file operations, and holds
@@ -40,9 +41,8 @@ public class RadioManager{
 				try{
 					radioStationsFile.createNewFile();
 				}catch(IOException e){
-					MTS.MTSLog.error("ERROR: UNABLE TO CREATE RADIO STATION SAVE FILE.  THINGS MAY GO BADLY!");
-					MTS.MTSLog.error(e.getMessage());
-					e.printStackTrace();
+					FileInterface.logError("ERROR: UNABLE TO CREATE RADIO STATION SAVE FILE.  THINGS MAY GO BADLY!");
+					FileInterface.logError(e.getMessage());
 				}
 			}
 			ready = true;
@@ -54,7 +54,7 @@ public class RadioManager{
 		Iterator<Radio> radioIterator = radios.values().iterator();
 		while(radioIterator.hasNext()){
 			Radio radio = radioIterator.next();
-			if(!radio.update(Minecraft.getMinecraft().isGamePaused())){
+			if(!radio.update(ClientInterface.isGamePaused())){
 				radioIterator.remove();
 			}
 		}
@@ -112,9 +112,8 @@ public class RadioManager{
 				}
 			}
 		}catch(IOException e){
-			MTS.MTSLog.error("ERROR: UNABLE TO PARSE RADIO STATION FILE.");
-			MTS.MTSLog.error(e.getMessage());
-			e.printStackTrace();
+			FileInterface.logError("ERROR: UNABLE TO PARSE RADIO STATION FILE.");
+			FileInterface.logError(e.getMessage());
 		}
 		//Don't sort the stations, as we want the order the user put them in.
 		return stations;
@@ -131,9 +130,8 @@ public class RadioManager{
 			}
 			radioStationFileWriter.close();
 		}catch(IOException e){
-			MTS.MTSLog.error("ERROR: UNABLE TO SAVE RADIO STATION FILE.");
-			MTS.MTSLog.error(e.getMessage());
-			e.printStackTrace();
+			FileInterface.logError("ERROR: UNABLE TO SAVE RADIO STATION FILE.");
+			FileInterface.logError(e.getMessage());
 		}
 	}
 	

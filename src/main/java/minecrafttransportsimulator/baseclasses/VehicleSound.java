@@ -24,19 +24,19 @@ public final class VehicleSound{
 		this.soundType = soundType;
 		
 		this.playerPos = new Vec3d(player.posX, player.posY, player.posZ);
-		this.sourcePos = optionalPart != null ? optionalPart.partPos : vehicle.getPositionVector();
+		this.sourcePos = optionalPart != null ? optionalPart.currentPosition : vehicle.getPositionVector();
 	}
 	
 	public double getPosX(){
-		return optionalPart != null ? optionalPart.partPos.x : vehicle.posX;
+		return optionalPart != null ? optionalPart.currentPosition.x : vehicle.posX;
 	}
 	
 	public double getPosY(){
-		return optionalPart != null ? optionalPart.partPos.y : vehicle.posY;
+		return optionalPart != null ? optionalPart.currentPosition.y : vehicle.posY;
 	}
 	
 	public double getPosZ(){
-		return optionalPart != null ? optionalPart.partPos.z : vehicle.posZ;
+		return optionalPart != null ? optionalPart.currentPosition.z : vehicle.posZ;
 	}
 	
 	public float getVolume(){
@@ -48,7 +48,7 @@ public final class VehicleSound{
 			
 			//Sound is not internal and player is not riding the source.  Volume is player distance.
 			this.playerPos = new Vec3d(player.posX, player.posY, player.posZ);
-			this.sourcePos = optionalPart != null ? optionalPart.partPos : vehicle.getPositionVector();
+			this.sourcePos = optionalPart != null ? optionalPart.currentPosition : vehicle.getPositionVector();
 			return (float) (getCurrentVolume()/playerPos.distanceTo(sourcePos)*(VehicleSoundSystem.isPlayerInsideEnclosedVehicle() ? 0.5F : 1.0F));
 		}else{
 			return 0;
@@ -60,7 +60,7 @@ public final class VehicleSound{
 		if(vehicle.equals(player.getRidingEntity())){
 			return getCurrentPitch();
 		}else{
-			sourcePos = optionalPart != null ? optionalPart.partPos : vehicle.getPositionVector();
+			sourcePos = optionalPart != null ? optionalPart.currentPosition : vehicle.getPositionVector();
 			playerPos = new Vec3d(player.posX, player.posY, player.posZ);
 			double soundVelocity = playerPos.distanceTo(sourcePos) - playerPos.addVector(player.motionX, player.motionY, player.motionZ).distanceTo(sourcePos.addVector(vehicle.motionX, vehicle.motionY, vehicle.motionZ));
 			return (float) (getCurrentPitch()*(1+soundVelocity/10F));
@@ -70,19 +70,19 @@ public final class VehicleSound{
 	
 	public String getSoundName(){
 		switch(soundType){
-			case ENGINE: return optionalPart.partName + "_running";
-			case HORN: return vehicle.pack.motorized.hornSound;
-			case SIREN: return vehicle.pack.motorized.sirenSound;
+			case ENGINE: return optionalPart.packComponent.name + "_running";
+			case HORN: return vehicle.packComponent.pack.motorized.hornSound;
+			case SIREN: return vehicle.packComponent.pack.motorized.sirenSound;
 			default: return "";
 		}
 	}
 	
 	public String getSoundUniqueName(){
-		return vehicle.getEntityId() + "_" + (optionalPart != null ? getSoundName() + String.valueOf(optionalPart.offset.x) + String.valueOf(optionalPart.offset.y) + String.valueOf(optionalPart.offset.z) : getSoundName());
+		return vehicle.getEntityId() + "_" + (optionalPart != null ? getSoundName() + String.valueOf(optionalPart.baseOffset.x) + String.valueOf(optionalPart.baseOffset.y) + String.valueOf(optionalPart.baseOffset.z) : getSoundName());
 	}
 	
 	public boolean isSoundSourceActive(){
-		return vehicle.isDead ? false : (optionalPart != null ? optionalPart.isValid() : true);
+		return !vehicle.isDead;
 	}
     
 	public boolean isSoundActive(){
@@ -96,7 +96,7 @@ public final class VehicleSound{
 	
 	private float getCurrentVolume(){
 		switch(soundType){
-			case ENGINE: return (float) (30F*((APartEngine) optionalPart).RPM/((APartEngine) optionalPart).pack.engine.maxRPM);
+			case ENGINE: return (float) (30F*((APartEngine) optionalPart).RPM/((APartEngine) optionalPart).packComponent.pack.engine.maxRPM);
 			case HORN: return 5.0F;
 			case SIREN: return 10.0F;
 			default: return 1.0F;
@@ -105,7 +105,7 @@ public final class VehicleSound{
 	
 	private float getCurrentPitch(){
 		switch(soundType){
-			case ENGINE: return (float) (((APartEngine) optionalPart).RPM/(optionalPart.pack.engine.maxRPM/2F));
+			case ENGINE: return (float) (((APartEngine) optionalPart).RPM/(optionalPart.packComponent.pack.engine.maxRPM/2F));
 			default: return 1.0F;
 		}
 	}

@@ -1,5 +1,7 @@
 package minecrafttransportsimulator.vehicles.parts;
 
+import java.util.List;
+
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.items.core.ItemJumperCable;
 import minecrafttransportsimulator.packets.general.PacketChat;
@@ -7,7 +9,8 @@ import minecrafttransportsimulator.packets.parts.PacketPartEngineDamage;
 import minecrafttransportsimulator.packets.parts.PacketPartEngineLinked;
 import minecrafttransportsimulator.packets.parts.PacketPartEngineSignal;
 import minecrafttransportsimulator.packets.parts.PacketPartEngineSignal.PacketEngineTypes;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
 import minecrafttransportsimulator.systems.ConfigSystem;
 import minecrafttransportsimulator.systems.VehicleEffectsSystem;
 import minecrafttransportsimulator.systems.VehicleEffectsSystem.FXPart;
@@ -63,10 +66,10 @@ public abstract class APartEngine extends APart implements FXPart{
 	public final float engineStartRPM;
 	
 	
-	public APartEngine(EntityVehicleE_Powered vehicle, PackPart packPart, String partName, NBTTagCompound dataTag){
-		super(vehicle, packPart, partName, dataTag);
-		engineStallRPM = pack.engine.maxRPM < 15000 ? 300 : 1500;
-		engineStartRPM = pack.engine.maxRPM < 15000 ? 500 : 2000;
+	public APartEngine(EntityVehicleE_Powered vehicle, PackComponentPart packComponent, PackPart vehicleDefinition, NBTTagCompound dataTag){
+		super(vehicle, packComponent, vehicleDefinition, dataTag);
+		engineStallRPM = packComponent.pack.engine.maxRPM < 15000 ? 300 : 1500;
+		engineStartRPM = packComponent.pack.engine.maxRPM < 15000 ? 500 : 2000;
 		if(dataTag.hasKey("engineState")){
 			this.state = EngineStates.values()[dataTag.getByte("engineState")];
 		}else{
@@ -97,7 +100,7 @@ public abstract class APartEngine extends APart implements FXPart{
 					if(jumperCableItem.lastEngineClicked.vehicle.equals(this.vehicle)){
 						MTS.MTSNet.sendTo(new PacketChat("interact.jumpercable.samevehicle"), (EntityPlayerMP) player);
 						jumperCableItem.lastEngineClicked = null;
-					}else if(this.partPos.distanceTo(jumperCableItem.lastEngineClicked.partPos) < 15){
+					}else if(currentPosition.distanceTo(jumperCableItem.lastEngineClicked.currentPosition) < 15){
 						linkedEngine = jumperCableItem.lastEngineClicked;
 						jumperCableItem.lastEngineClicked.linkedEngine = this;
 						jumperCableItem.lastEngineClicked = null;
@@ -142,11 +145,11 @@ public abstract class APartEngine extends APart implements FXPart{
 		
 		//Check to see if we are linked and need to equalize power between us and another engine.
 		if(linkedEngine != null){
-			if(linkedEngine.partPos.distanceTo(this.partPos) > 16){
+			if(linkedEngine.currentPosition.distanceTo(this.currentPosition) > 16){
 				linkedEngine.linkedEngine = null;
 				linkedEngine = null;
 				if(vehicle.world.isRemote){
-					MTS.MTSNet.sendToAllAround(new PacketChat("interact.jumpercable.linkdropped"), new TargetPoint(vehicle.world.provider.getDimension(), partPos.x, partPos.y, partPos.z, 16));
+					MTS.MTSNet.sendToAllAround(new PacketChat("interact.jumpercable.linkdropped"), new TargetPoint(vehicle.world.provider.getDimension(), currentPosition.x, currentPosition.y, currentPosition.z, 16));
 				}
 			}else if(vehicle.electricPower + 0.5 < linkedEngine.vehicle.electricPower){
 				linkedEngine.vehicle.electricPower -= 0.005F;
@@ -158,7 +161,7 @@ public abstract class APartEngine extends APart implements FXPart{
 				linkedEngine.linkedEngine = null;
 				linkedEngine = null;
 				if(vehicle.world.isRemote){
-					MTS.MTSNet.sendToAllAround(new PacketChat("interact.jumpercable.powerequal"), new TargetPoint(vehicle.world.provider.getDimension(), partPos.x, partPos.y, partPos.z, 16));
+					MTS.MTSNet.sendToAllAround(new PacketChat("interact.jumpercable.powerequal"), new TargetPoint(vehicle.world.provider.getDimension(), currentPosition.x, currentPosition.y, currentPosition.z, 16));
 				}
 			}
 		}
@@ -167,17 +170,17 @@ public abstract class APartEngine extends APart implements FXPart{
 		if(state.esOn){
 			if(starterLevel == 0){
 				if(vehicle.electricPower > 2){
-					starterLevel += pack.engine.starterDuration;
+					starterLevel += packComponent.pack.engine.starterDuration;
 					if(vehicle.world.isRemote){
-						MTS.proxy.playSound(partPos, partName + "_cranking", 1, (float) (RPM/engineStartRPM));
+						MTS.proxy.playSound(currentPosition, packComponent.name + "_cranking", 1, (float) (RPM/engineStartRPM));
 					}
 				}
 			}
 			if(starterLevel > 0){
 				vehicle.electricUsage += 0.05F;
-				if(vehicle.fuel > pack.engine.fuelConsumption*ConfigSystem.getDoubleConfig("FuelUsageFactor") && !isCreative){
-					vehicle.fuel -= pack.engine.fuelConsumption*ConfigSystem.getDoubleConfig("FuelUsageFactor");
-					fuelFlow += pack.engine.fuelConsumption*ConfigSystem.getDoubleConfig("FuelUsageFactor");
+				if(vehicle.fuel > packComponent.pack.engine.fuelConsumption*ConfigSystem.getDoubleConfig("FuelUsageFactor") && !isCreative){
+					vehicle.fuel -= packComponent.pack.engine.fuelConsumption*ConfigSystem.getDoubleConfig("FuelUsageFactor");
+					fuelFlow += packComponent.pack.engine.fuelConsumption*ConfigSystem.getDoubleConfig("FuelUsageFactor");
 				}
 			}
 		}else if(state.hsOn){
@@ -189,32 +192,32 @@ public abstract class APartEngine extends APart implements FXPart{
 		if(starterLevel > 0){
 			--starterLevel;
 			if(RPM < engineStartRPM*1.2){
-				RPM = Math.min(RPM + pack.engine.starterPower, engineStartRPM*1.2);
+				RPM = Math.min(RPM + packComponent.pack.engine.starterPower, engineStartRPM*1.2);
 			}else{
-				RPM = Math.max(RPM - pack.engine.starterPower, engineStartRPM*1.2);
+				RPM = Math.max(RPM - packComponent.pack.engine.starterPower, engineStartRPM*1.2);
 			}
 		}
 		
 		ambientTemp = 25*vehicle.world.getBiome(vehicle.getPosition()).getTemperature(vehicle.getPosition()) - 5*(Math.pow(2, vehicle.posY/400) - 1);
 		coolingFactor = 0.001 + vehicle.velocity/500F;
 		temp -= (temp - ambientTemp)*coolingFactor;
-		vehicle.electricUsage -= 0.05*RPM/pack.engine.maxRPM;
+		vehicle.electricUsage -= 0.05*RPM/packComponent.pack.engine.maxRPM;
 		
 		if(state.running){
 			//First part is temp affect on oil, second is engine oil pump.
 			oilPressure = Math.min(90 - temp/10, oilPressure + RPM/engineStartRPM - 0.5*(oilLeak ? 5F : 1F)*(oilPressure/engineOilDanger));
 			if(oilPressure < engineOilDanger){
-				temp += Math.max(0, (20*RPM/pack.engine.maxRPM)/20);
+				temp += Math.max(0, (20*RPM/packComponent.pack.engine.maxRPM)/20);
 				hours += 0.01;
 			}else{
-				temp += Math.max(0, (7*RPM/pack.engine.maxRPM - temp/(engineColdTemp*2))/20);
+				temp += Math.max(0, (7*RPM/packComponent.pack.engine.maxRPM - temp/(engineColdTemp*2))/20);
 				hours += 0.001;	
 			}
 			if(RPM > engineStartRPM*1.5 && temp < engineColdTemp){//Not warmed up
 				hours += 0.001*(RPM/engineStartRPM - 1);
 			}
-			if(RPM > getSafeRPMFromMax(this.pack.engine.maxRPM)){//Too fast
-				hours += 0.001*(RPM - getSafeRPMFromMax(this.pack.engine.maxRPM))/10F;
+			if(RPM > getSafeRPMFromMax(this.packComponent.pack.engine.maxRPM)){//Too fast
+				hours += 0.001*(RPM - getSafeRPMFromMax(this.packComponent.pack.engine.maxRPM))/10F;
 			}
 			if(temp > engineOverheatTemp1){//Too hot
 				hours += 0.001*(temp - engineOverheatTemp1);
@@ -224,13 +227,13 @@ public abstract class APartEngine extends APart implements FXPart{
 			}
 			
 			if(hours > 200 && !vehicle.world.isRemote){
-				if(Math.random() < hours/10000*(getSafeRPMFromMax(this.pack.engine.maxRPM)/(RPM+getSafeRPMFromMax(this.pack.engine.maxRPM)/2))){
+				if(Math.random() < hours/10000*(getSafeRPMFromMax(this.packComponent.pack.engine.maxRPM)/(RPM+getSafeRPMFromMax(this.packComponent.pack.engine.maxRPM)/2))){
 					backfireEngine();
 				}
 			}
 
 			if(!isCreative && !vehicle.fluidName.isEmpty()){
-				fuelFlow = pack.engine.fuelConsumption*ConfigSystem.getDoubleConfig("FuelUsageFactor")/ConfigSystem.getFuelValue(pack.engine.fuelType, vehicle.fluidName)*RPM*(fuelLeak ? 1.5F : 1.0F)/pack.engine.maxRPM;
+				fuelFlow = packComponent.pack.engine.fuelConsumption*ConfigSystem.getDoubleConfig("FuelUsageFactor")/ConfigSystem.getFuelValue(packComponent.pack.engine.fuelType, vehicle.fluidName)*RPM*(fuelLeak ? 1.5F : 1.0F)/packComponent.pack.engine.maxRPM;
 				vehicle.fuel -= fuelFlow;
 			}
 			
@@ -270,8 +273,8 @@ public abstract class APartEngine extends APart implements FXPart{
 	}
 	
 	@Override
-	public void removePart(){
-		super.removePart();
+	public void removePart(List<APart> partsToRemove){
+		super.removePart(partsToRemove);
 		this.state = EngineStates.ENGINE_OFF;
 	}
 	
@@ -317,7 +320,7 @@ public abstract class APartEngine extends APart implements FXPart{
 			}else if(state.equals(EngineStates.RUNNING)){
 				state = EngineStates.ENGINE_OFF;
 				internalFuel = 100;
-				MTS.proxy.playSound(partPos, partName + "_starting", 1, 1);
+				MTS.proxy.playSound(currentPosition, packComponent.name + "_stopping", 1, 1);
 			}
 		}
 	}
@@ -354,18 +357,18 @@ public abstract class APartEngine extends APart implements FXPart{
 		}else{
 			return;
 		}
-		starterLevel += pack.engine.starterDuration;
+		starterLevel += packComponent.pack.engine.starterDuration;
 		if(vehicle.world.isRemote){
-			MTS.proxy.playSound(partPos, partName + "_cranking", 1, (float) (RPM/engineStartRPM));
+			MTS.proxy.playSound(currentPosition, packComponent.name + "_cranking", 1, (float) (RPM/engineStartRPM));
 		}
 	}
 	
 	public void backfireEngine(){
-		RPM -= pack.engine.maxRPM < 15000 ? 100 : 500;
+		RPM -= packComponent.pack.engine.maxRPM < 15000 ? 100 : 500;
 		if(!vehicle.world.isRemote){
 			MTS.MTSNet.sendToAll(new PacketPartEngineSignal(this, PacketEngineTypes.BACKFIRE));
 		}else{
-			MTS.proxy.playSound(partPos, partName + "_sputter", 0.5F, 1);
+			MTS.proxy.playSound(currentPosition, packComponent.name + "_sputter", 0.5F, 1);
 			backfired = true;
 		}
 	}
@@ -383,7 +386,7 @@ public abstract class APartEngine extends APart implements FXPart{
 		if(!vehicle.world.isRemote){
 			MTS.MTSNet.sendToAll(new PacketPartEngineSignal(this, PacketEngineTypes.START));
 		}else{
-			MTS.proxy.playSound(partPos, partName + "_starting", 1, 1);
+			MTS.proxy.playSound(currentPosition, packComponent.name + "_starting", 1, 1);
 		}
 	}
 	
@@ -401,15 +404,15 @@ public abstract class APartEngine extends APart implements FXPart{
 			if(!packetType.equals(PacketEngineTypes.DROWN)){
 				internalFuel = 100;
 			}
-			MTS.proxy.playSound(partPos, partName + "_starting", 1, 1);
+			MTS.proxy.playSound(currentPosition, packComponent.name + "_stopping", 1, 1);
 		}
 	}
 	
 	protected void explodeEngine(){
 		if(ConfigSystem.getBooleanConfig("Explosions")){
-			vehicle.world.newExplosion(vehicle, partPos.x, partPos.y, partPos.z, 1F, true, true);
+			vehicle.world.newExplosion(vehicle, currentPosition.x, currentPosition.y, currentPosition.z, 1F, true, true);
 		}else{
-			vehicle.world.newExplosion(vehicle, partPos.x, partPos.y, partPos.z, 0F, true, true);
+			vehicle.world.newExplosion(vehicle, currentPosition.x, currentPosition.y, currentPosition.z, 0F, true, true);
 		}
 		vehicle.removePart(this, true);
 	}
@@ -419,7 +422,7 @@ public abstract class APartEngine extends APart implements FXPart{
 	}
 	
 	protected boolean isInLiquid(){
-		return vehicle.world.getBlockState(new BlockPos(partPos)).getMaterial().isLiquid();
+		return vehicle.world.getBlockState(new BlockPos(currentPosition)).getMaterial().isLiquid();
 	}
 	
 	public double getEngineRotation(float partialTicks){
@@ -437,25 +440,25 @@ public abstract class APartEngine extends APart implements FXPart{
 	public void spawnParticles(){
 		if(Minecraft.getMinecraft().effectRenderer != null){
 			if(temp > engineOverheatTemp1){
-				Minecraft.getMinecraft().world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, partPos.x, partPos.y + 0.5, partPos.z, 0, 0.15, 0);
+				Minecraft.getMinecraft().world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, currentPosition.x, currentPosition.y + 0.5, currentPosition.z, 0, 0.15, 0);
 				if(temp > engineOverheatTemp2){
-					Minecraft.getMinecraft().world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, partPos.x, partPos.y + 0.5, partPos.z, 0, 0.15, 0);
+					Minecraft.getMinecraft().world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, currentPosition.x, currentPosition.y + 0.5, currentPosition.z, 0, 0.15, 0);
 				}
 			}
 			if(oilLeak){
 				if(vehicle.ticksExisted%20 == 0){
-					Minecraft.getMinecraft().effectRenderer.addEffect(new VehicleEffectsSystem.OilDropParticleFX(vehicle.world, partPos.x - 0.25*Math.sin(Math.toRadians(vehicle.rotationYaw)), partPos.y, partPos.z + 0.25*Math.cos(Math.toRadians(vehicle.rotationYaw))));
+					Minecraft.getMinecraft().effectRenderer.addEffect(new VehicleEffectsSystem.OilDropParticleFX(vehicle.world, currentPosition.x - 0.25*Math.sin(Math.toRadians(vehicle.rotationYaw)), currentPosition.y, currentPosition.z + 0.25*Math.cos(Math.toRadians(vehicle.rotationYaw))));
 				}
 			}
 			if(fuelLeak){
 				if((vehicle.ticksExisted + 5)%20 == 0){
-					Minecraft.getMinecraft().effectRenderer.addEffect(new VehicleEffectsSystem.FuelDropParticleFX(vehicle.world, partPos.y, partPos.y, partPos.z));
+					Minecraft.getMinecraft().effectRenderer.addEffect(new VehicleEffectsSystem.FuelDropParticleFX(vehicle.world, currentPosition.y, currentPosition.y, currentPosition.z));
 				}
 			}
 			if(backfired){
 				backfired = false;
 				for(byte i=0; i<5; ++i){
-					Minecraft.getMinecraft().world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, partPos.x, partPos.y + 0.5, partPos.z, Math.random()*0.15, 0.15, Math.random()*0.15);
+					Minecraft.getMinecraft().world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, currentPosition.x, currentPosition.y + 0.5, currentPosition.z, Math.random()*0.15, 0.15, Math.random()*0.15);
 				}
 			}
 		}

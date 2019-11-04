@@ -1,5 +1,6 @@
 package minecrafttransportsimulator.vehicles.main;
 
+import minecrafttransportsimulator.packs.components.PackComponentVehicle;
 import net.minecraft.world.World;
 
 
@@ -9,8 +10,8 @@ public final class EntityVehicleG_Boat extends EntityVehicleF_Ground{
 		super(world);
 	}
 	
-	public EntityVehicleG_Boat(World world, float posX, float posY, float posZ, float rotation, String vehicleName){
-		super(world, posX, posY, posZ, rotation, vehicleName);
+	public EntityVehicleG_Boat(World world, float posX, float posY, float posZ, float rotation, PackComponentVehicle packComponent){
+		super(world, posX, posY, posZ, rotation, packComponent);
 	}
 	
 	@Override

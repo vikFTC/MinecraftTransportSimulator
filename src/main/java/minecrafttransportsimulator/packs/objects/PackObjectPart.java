@@ -1,12 +1,12 @@
-package minecrafttransportsimulator.packloading;
+package minecrafttransportsimulator.packs.objects;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackPart;
-import minecrafttransportsimulator.packloading.PackVehicleObject.PackRotatableModelObject;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
+import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackRotatableModelObject;
 
-public class PackPartObject{
+public class PackObjectPart{
 	public PartGeneralConfig general;
     public PartEngineConfig engine;
     public PartWheelConfig wheel;
@@ -25,6 +25,7 @@ public class PackPartObject{
     public class PartGeneralConfig{
     	public String type;
     	public String modelName;
+    	public boolean useVehicleTexture;
     	public String[] materials;
     	public String customType;
     	public boolean disableMirroring;

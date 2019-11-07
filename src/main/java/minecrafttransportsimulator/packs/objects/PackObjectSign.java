@@ -4,6 +4,7 @@ public class PackObjectSign{
 	public SignGeneralConfig general;
 
     public class SignGeneralConfig{
+    	public String name;
     	public String font;
     	public TextLines[] textLines;
     }

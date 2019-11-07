@@ -5,7 +5,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import minecrafttransportsimulator.packs.components.PackComponentInstrument;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -17,6 +16,6 @@ public class ItemInstrument extends AItemPackComponent<PackComponentInstrument>{
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltipLines, ITooltipFlag flagIn){
-		tooltipLines.add(I18n.format(getUnlocalizedName(stack) + ".description"));
+		tooltipLines.add(packComponent.pack.general.description);
 	}
 }

@@ -15,6 +15,7 @@ public class PackObjectVehicle{
     public PackRenderingConfig rendering;
     
     public class PackGeneralConfig{
+    	public String description;
     	public boolean openTop;
     	public int emptyMass;
     	public String type;
@@ -22,6 +23,7 @@ public class PackObjectVehicle{
     }
     
     public class PackFileDefinitions{
+    	public String name;
     	public String subName;
     	public String[] extraMaterials;
     }

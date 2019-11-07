@@ -4,6 +4,7 @@ public class PackObjectDecor{
 	public DecorGeneralConfig general;
 
     public class DecorGeneralConfig{
+    	public String name;
     	public float width;
     	public float height;
     	public float depth;

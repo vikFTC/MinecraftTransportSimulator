@@ -6,6 +6,7 @@ import minecrafttransportsimulator.dataclasses.MTSRegistry;
 import minecrafttransportsimulator.packs.PackLoader;
 import minecrafttransportsimulator.systems.ConfigSystem;
 import mts_to_mc.interfaces.FileInterface;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -32,6 +33,7 @@ public class MTS {
 	
 	public MTS(){
 		FluidRegistry.enableUniversalBucket();
+		PackLoader.init();
 	}
 
 	@EventHandler
@@ -39,8 +41,7 @@ public class MTS {
 		proxy.initConfig(event.getSuggestedConfigurationFile());
 		proxy.initControls();
 		minecraftDir = new File(event.getModConfigurationDirectory().getParent());
-		FileInterface.init(event);
-		PackLoader.init();
+		FileInterface.initLog(event);
 	}
 	
 	@EventHandler

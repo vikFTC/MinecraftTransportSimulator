@@ -45,6 +45,8 @@ public abstract class APackComponent<PackObject extends Object> implements Compa
 	public int compareTo(APackComponent otherComponent){
 		return name.compareTo(otherComponent.name);
 	}
+	
+	public abstract String getTranslatedName();
 		
 	public abstract String[] getCraftingMaterials();
 }

@@ -13,6 +13,7 @@ import java.util.zip.ZipFile;
 
 import com.google.gson.Gson;
 
+import minecrafttransportsimulator.items.core.AItemPackComponent;
 import minecrafttransportsimulator.items.core.ItemDecor;
 import minecrafttransportsimulator.items.core.ItemInstrument;
 import minecrafttransportsimulator.items.core.ItemItem;
@@ -47,7 +48,6 @@ import minecrafttransportsimulator.packs.objects.PackObjectSign;
 import minecrafttransportsimulator.packs.objects.PackObjectVehicle;
 import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackFileDefinitions;
 import mts_to_mc.interfaces.FileInterface;
-import net.minecraft.item.Item;
 
 /**
  * Class responsible for loading packs from the mod folder and parsing them out into their respective components.
@@ -92,6 +92,9 @@ public final class PackLoader{
 						//Set the packObject to the MTSPack.info file.
 						packObjects.put(packObject.packID, packObject);
 						
+						//Registers the pack jarFile with the Minecraft Resource registry.
+						FileInterface.registerJarForResources(file, packObject.packID);
+						
 						//Create lists to hold components.  Will need to sort them later.
 					    List<PackComponentVehicle> packVehicleComponents = new ArrayList<PackComponentVehicle>();
 					    List<PackComponentPart> packPartComponents = new ArrayList<PackComponentPart>();
@@ -105,22 +108,27 @@ public final class PackLoader{
 							ZipEntry entry = entries.nextElement();
 							String entryName = entry.getName();
 							if(entryName.endsWith(".json") && entryName.contains("jsondefs")){
-								String entryFileName = entryName.substring(entryName.lastIndexOf('/') + 1, entryName.length() - ".json".length());
-								InputStreamReader reader = new InputStreamReader(jarFile.getInputStream(entry));
-								if(entryName.contains("/vehicles/")){
-									packVehicleComponents.addAll(parseVehicleJSON(packObject.packID, entryFileName, reader));
-								}else if(entryName.contains("/parts/")){
-									packPartComponents.add(parsePartJSON(packObject.packID, entryFileName, reader));
-								}else if(entryName.contains("/instruments/")){
-									packInstrumentComponents.add(parseInstrumentJSON(packObject.packID, entryFileName, reader));
-								}else if(entryName.contains("/signs/")){
-									packSignComponents.add(parseSignJSON(packObject.packID, entryFileName, reader));
-								}else if(entryName.contains("/decors/")){
-									packDecorComponents.add(parseDecorJSON(packObject.packID, entryFileName, reader));
-								}else if(entryName.contains("/items/")){
-									packItemComponents.add(parseItemJSON(packObject.packID, entryFileName, reader));
-								}else{
-									FileInterface.logError("ERROR: No valid pack component found for " + entryFileName + " Skipping!");
+								String entryFileName = entryName.substring(entryName.lastIndexOf('/') + 1, entryName.length() - ".json".length()); 
+								try{
+									InputStreamReader reader = new InputStreamReader(jarFile.getInputStream(entry));
+									if(entryName.contains("/vehicles/")){
+										packVehicleComponents.addAll(parseVehicleJSON(packObject.packID, entryFileName, reader));
+									}else if(entryName.contains("/parts/")){
+										packPartComponents.add(parsePartJSON(packObject.packID, entryFileName, reader));
+									}else if(entryName.contains("/instruments/")){
+										packInstrumentComponents.add(parseInstrumentJSON(packObject.packID, entryFileName, reader));
+									}else if(entryName.contains("/signs/")){
+										packSignComponents.add(parseSignJSON(packObject.packID, entryFileName, reader));
+									}else if(entryName.contains("/decors/")){
+										packDecorComponents.add(parseDecorJSON(packObject.packID, entryFileName, reader));
+									}else if(entryName.contains("/items/")){
+										packItemComponents.add(parseItemJSON(packObject.packID, entryFileName, reader));
+									}else{
+										System.err.println("ERROR: No valid pack component found for " + entryFileName + " Skipping!");
+									}
+								}catch(Exception e){
+									System.err.println("ERROR: Could not parse .json: " + entryFileName);
+									e.printStackTrace();
 								}
 							}
 						}
@@ -143,8 +151,7 @@ public final class PackLoader{
 					}
 					jarFile.close();
 				}catch(Exception e){
-					FileInterface.logError("ERROR: Could not complete parsing of: " + file.getName());
-					FileInterface.logError(e.getMessage());
+					System.err.println("ERROR: Could not open .jar file for parsing: " + file.getName());
 					e.printStackTrace();
 				}
 			}
@@ -154,8 +161,8 @@ public final class PackLoader{
     /**Call this to get every item in all packs.  Most of the time you should access
      * the specific map for the pack you want, but sometimes all items are needed
      * (say for registration), in which case this helper method may be used.**/
-    public static List<Item> getAllPackItems(){
-    	List<Item> itemList = new ArrayList<Item>();
+    public static List<AItemPackComponent> getAllPackItems(){
+    	List<AItemPackComponent> itemList = new ArrayList<AItemPackComponent>();
     	for(String packName : packObjects.keySet()){
     		for(PackComponentVehicle component : vehicleComponents.get(packName)){
     			itemList.add(component.item);

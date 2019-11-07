@@ -18,7 +18,17 @@ public class PackComponentVehicle extends APackComponent<PackObjectVehicle>{
 	public PackComponentVehicle(String packID, String name, AItemPackComponent item, PackObjectVehicle pack){
 		super(packID, name, item, pack);
 	}
-
+	
+	@Override
+	public String getTranslatedName(){
+		for(PackFileDefinitions definition : pack.definitions){
+			if(name.endsWith(definition.subName)){
+				return definition.name;
+			}
+		}
+		return "INVALID VEHICLE?";
+	}
+	
 	@Override
 	public String[] getCraftingMaterials(){
 		List<String> materials = new ArrayList<String>();

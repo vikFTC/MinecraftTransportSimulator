@@ -8,6 +8,8 @@ public class PackObjectInstrument{
     public List<PackInstrumentComponent> components = new ArrayList<PackInstrumentComponent>();
 
     public class PackInstrumentDefinition{
+    	public String name;
+    	public String description;
     	public List<String> validVehicles;
     	public String[] materials;
     	public int textureXSectorStart;

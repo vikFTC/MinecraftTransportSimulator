@@ -1,5 +1,7 @@
 package minecrafttransportsimulator.items.core;
 
-public class ItemItem extends AItemPackComponent{
+import minecrafttransportsimulator.packs.components.PackComponentItem;
+
+public class ItemItem extends AItemPackComponent<PackComponentItem>{
 	
 }

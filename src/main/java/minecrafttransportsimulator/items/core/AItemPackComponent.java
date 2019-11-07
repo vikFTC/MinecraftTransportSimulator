@@ -1,20 +1,12 @@
 package minecrafttransportsimulator.items.core;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.dataclasses.CreativeTabPack;
 import minecrafttransportsimulator.dataclasses.MTSRegistry;
+import minecrafttransportsimulator.packs.PackLoader;
 import minecrafttransportsimulator.packs.components.APackComponent;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public abstract class AItemPackComponent<PackComponent extends APackComponent> extends Item{
 	public PackComponent packComponent;
@@ -29,14 +21,23 @@ public abstract class AItemPackComponent<PackComponent extends APackComponent> e
 		setUnlocalizedName(component.packID + "." + component.name);
 		//Make a pack tab if we haven't already.
 		if(!MTSRegistry.packTabs.containsKey(component.packID)){
-			MTSRegistry.packTabs.put(component.packID, new CreativeTabPack(component.packID));
+			MTSRegistry.packTabs.put(component.packID, new CreativeTabPack(PackLoader.packObjects.get(component.packID)));
 		}
 		setCreativeTab(MTSRegistry.packTabs.get(component.packID));
 	}
+
+	@Override
+	public String getItemStackDisplayName(ItemStack stack){
+		return getUnlocalizedName();
+	}
 	
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltipLines, ITooltipFlag flagIn){
-		tooltipLines.add(I18n.format(getUnlocalizedName(stack) + ".description"));
+	public String getUnlocalizedName(ItemStack stack){
+		return getUnlocalizedName();
 	}
+	
+	@Override
+	public String getUnlocalizedName(){
+        return packComponent.getTranslatedName();
+    }
 }

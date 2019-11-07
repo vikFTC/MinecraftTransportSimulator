@@ -10,6 +10,11 @@ public class PackComponentDecor extends APackComponent<PackObjectDecor>{
 	}
 	
 	@Override
+	public String getTranslatedName(){
+		return pack.general.name;
+	}
+	
+	@Override
 	public String[] getCraftingMaterials(){
 		return pack.general.materials;
 	}

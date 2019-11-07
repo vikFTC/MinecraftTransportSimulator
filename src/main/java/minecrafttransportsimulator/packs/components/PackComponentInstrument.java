@@ -8,7 +8,12 @@ public class PackComponentInstrument extends APackComponent<PackObjectInstrument
 	public PackComponentInstrument(String packID, String name, AItemPackComponent item, PackObjectInstrument pack){
 		super(packID, name, item, pack);
 	}
-
+	
+	@Override
+	public String getTranslatedName(){
+		return pack.general.name;
+	}
+	
 	@Override
 	public String[] getCraftingMaterials(){
 		return pack.general.materials;

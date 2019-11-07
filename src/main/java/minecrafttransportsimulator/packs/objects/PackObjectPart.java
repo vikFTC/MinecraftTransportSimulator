@@ -23,6 +23,7 @@ public class PackObjectPart{
     public PartRenderingConfig rendering;
 
     public class PartGeneralConfig{
+    	public String name;
     	public String type;
     	public String modelName;
     	public boolean useVehicleTexture;

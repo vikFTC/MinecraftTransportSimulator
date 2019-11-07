@@ -7,6 +7,7 @@ import minecrafttransportsimulator.blocks.core.TileEntityDecor;
 import minecrafttransportsimulator.blocks.core.TileEntityFuelPump;
 import minecrafttransportsimulator.blocks.pole.TileEntityPoleSign;
 import minecrafttransportsimulator.blocks.pole.TileEntityPoleWallConnector;
+import minecrafttransportsimulator.items.core.AItemPackComponent;
 import minecrafttransportsimulator.packs.PackLoader;
 import minecrafttransportsimulator.rendering.RenderVehicle;
 import minecrafttransportsimulator.rendering.blockrenders.RenderDecor;
@@ -59,7 +60,7 @@ public final class MTSRegistryClient{
 		}
 		
 		//Now register items for the packs.
-		for(Item packItem : PackLoader.getAllPackItems()){
+		for(AItemPackComponent packItem : PackLoader.getAllPackItems()){
 			registerItemRender(packItem);
 		}
 	}

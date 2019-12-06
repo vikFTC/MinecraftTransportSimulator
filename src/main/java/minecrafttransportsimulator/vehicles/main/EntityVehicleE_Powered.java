@@ -52,7 +52,7 @@ public abstract class EntityVehicleE_Powered extends EntityVehicleD_Moving imple
 	private final List<LightTypes> lightsOn = new ArrayList<LightTypes>();
 	private final List<VehicleSound> sounds = new ArrayList<VehicleSound>();
 	
-	public final List<PackComponentInstrument> instruments = new ArrayList<PackComponentInstrument>();
+	public final List<PackComponentInstrument> instruments = new ArrayList<PackComponentInstrument>(Byte.MAX_VALUE);
 	
 	public EntityVehicleE_Powered(World world){
 		super(world);
@@ -91,8 +91,10 @@ public abstract class EntityVehicleE_Powered extends EntityVehicleD_Moving imple
 		super.destroyAtPosition(x, y, z);
 		//Spawn instruments in the world.
 		for(PackComponentInstrument instrumentComponent : instruments){
-			ItemStack stack = new ItemStack(instrumentComponent.item);
-			world.spawnEntity(new EntityItem(world, posX, posY, posZ, stack));
+			if(instrumentComponent != null){
+				ItemStack stack = new ItemStack(instrumentComponent.item);
+				world.spawnEntity(new EntityItem(world, posX, posY, posZ, stack));
+			}
 		}
 		
 		//Now find the controller to see who to display as the killer in the death message.
@@ -349,8 +351,10 @@ public abstract class EntityVehicleE_Powered extends EntityVehicleD_Moving imple
 		
 		String[] instrumentsInSlots = new String[packComponent.pack.motorized.instruments.size()];
 		for(byte i=0; i<instruments.size(); ++i){
-			tagCompound.setString("instrumentInSlot" + i + "_pack", instruments.get(i).packID);
-			tagCompound.setString("instrumentInSlot" + i + "_name", instruments.get(i).name);
+			if(instruments.get(i) != null){
+				tagCompound.setString("instrumentInSlot" + i + "_pack", instruments.get(i).packID);
+				tagCompound.setString("instrumentInSlot" + i + "_name", instruments.get(i).name);
+			}
 		}
 		return tagCompound;
 	}

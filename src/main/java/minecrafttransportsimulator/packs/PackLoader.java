@@ -53,6 +53,17 @@ import mts_to_mc.interfaces.FileInterface;
  * Class responsible for loading packs from the mod folder and parsing them out into their respective components.
  * Contains lists with all components found and loaded.  Use the info contained in the components to switch
  * between the String, Item, and operational forms of the pack objects.
+ * <br>
+ * <br>If you wish to hot-load objects into the mod that are generated on-the-fly and are not in JARs, do the following: 
+ * <br>1) Create a new PackComponentXXXXX object for the map.  This will require you to create an item that extends {@link minecrafttransportsimulator.items.core.AItemPackComponent}
+ * <br>2) Add that component to the appropriate map.
+ * <br> 
+ * <br>If you don't have a mtspack.info file in your mod, you will also have to:
+ * <br>1) Add an entry to the packObjects map for your pack
+ * <br>2) Call {@link mts_to_mc.interfaces.FileInterface#registerJarForResources(File, String)} and pass-in your JAR as a File object.
+ * <br>
+ * <br>These ensure that your pack will be linked for loading of resources and MUST be done before PreInit.  Failure to do this will result
+ * in MTS not being able to load resources from the jar for textures and models.
  *
  * @author don_bruce
  */

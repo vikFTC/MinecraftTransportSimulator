@@ -62,7 +62,7 @@ public abstract class AItemPart extends AItemPackComponent<PackComponentPart>{
 		    										ItemStack heldStack = player.getHeldItem(hand);
 		    										APart newPart = packComponent.createPart((EntityVehicleE_Powered) vehicle, packComponent, packPartEntry.getValue(), heldStack.hasTagCompound() ? heldStack.getTagCompound() : new NBTTagCompound());
 		    										vehicle.addPart(newPart, false);
-		    										MTS.MTSNet.sendToAll(new PacketVehicleClientPartAddition(vehicle, packPartEntry.getKey().x, packPartEntry.getKey().y, packPartEntry.getKey().z, heldStack));
+		    										MTS.MTSNet.sendToAll(new PacketVehicleClientPartAddition(vehicle, packPartEntry.getKey().x, packPartEntry.getKey().y, packPartEntry.getKey().z, newPart));
 		    										if(!player.capabilities.isCreativeMode){
 		    											player.inventory.clearMatchingItems(this, heldStack.getItemDamage(), 1, heldStack.getTagCompound());
 		    										}

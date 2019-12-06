@@ -41,7 +41,7 @@ public class PacketVehicleAttacked extends APacketVehiclePlayer{
 								//Remove this entity if possible.
 								boolean isPlayerOP = player.getServer().getPlayerList().getOppedPlayers().getEntry(player.getGameProfile()) != null || player.getServer().isSinglePlayer();
 								if(vehicle.ownerName.isEmpty() || player.getUUID(player.getGameProfile()).toString().equals(vehicle.ownerName) || isPlayerOP){
-									ItemStack stack = new ItemStack(MTSRegistry.vehicleItemMap.get(vehicle.vehicleName));
+									ItemStack stack = new ItemStack(vehicle.packComponent.item);
 									NBTTagCompound stackTag = vehicle.writeToNBT(new NBTTagCompound());
 									stack.setTagCompound(stackTag);
 									vehicle.world.spawnEntity(new EntityItem(vehicle.world, vehicle.posX, vehicle.posY, vehicle.posZ, stack));
@@ -65,7 +65,7 @@ public class PacketVehicleAttacked extends APacketVehiclePlayer{
 										if(droppedItem != null){
 											ItemStack droppedStack = new ItemStack(droppedItem);
 											droppedStack.setTagCompound(hitPart.getPartNBTTag());
-											vehicle.world.spawnEntity(new EntityItem(vehicle.world, hitPart.partPos.x, hitPart.partPos.y, hitPart.partPos.z, droppedStack));
+											vehicle.world.spawnEntity(new EntityItem(vehicle.world, hitPart.currentPosition.x, hitPart.currentPosition.y, hitPart.currentPosition.z, droppedStack));
 										}
 									}else{
 										MTS.MTSNet.sendTo(new PacketChat("interact.failure.vehicleowned"), (EntityPlayerMP) player);

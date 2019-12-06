@@ -1,16 +1,13 @@
 package minecrafttransportsimulator.packets.vehicles;
 
-import java.lang.reflect.Constructor;
-
 import io.netty.buffer.ByteBuf;
-import minecrafttransportsimulator.MTS;
-import minecrafttransportsimulator.items.parts.AItemPart;
+import minecrafttransportsimulator.packs.PackLoader;
+import minecrafttransportsimulator.packs.components.PackComponentPart;
 import minecrafttransportsimulator.packs.objects.PackObjectVehicle.PackPart;
-import minecrafttransportsimulator.systems.PackParserSystem;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleA_Base;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import minecrafttransportsimulator.vehicles.parts.APart;
-import net.minecraft.item.ItemStack;
+import mts_to_mc.interfaces.FileInterface;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
@@ -19,25 +16,33 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class PacketVehicleClientPartAddition extends APacketVehiclePart{
-	private ItemStack partStack;
+	private String partPackID;
+	private String partName;
+	private NBTTagCompound partTag;
 
 	public PacketVehicleClientPartAddition(){}
 	
-	public PacketVehicleClientPartAddition(EntityVehicleA_Base vehicle, double offsetX, double offsetY, double offsetZ, ItemStack partStack){
+	public PacketVehicleClientPartAddition(EntityVehicleA_Base vehicle, double offsetX, double offsetY, double offsetZ, APart part){
 		super(vehicle, offsetX, offsetY, offsetZ);
-		this.partStack = partStack;
+		this.partPackID = part.packComponent.packID;
+		this.partName = part.packComponent.name;
+		this.partTag = part.getPartNBTTag();
 	}
 	
 	@Override
 	public void fromBytes(ByteBuf buf){
 		super.fromBytes(buf);
-		this.partStack=ByteBufUtils.readItemStack(buf);
+		this.partPackID = ByteBufUtils.readUTF8String(buf);
+		this.partName = ByteBufUtils.readUTF8String(buf);
+		this.partTag = ByteBufUtils.readTag(buf);
 	}
 
 	@Override
 	public void toBytes(ByteBuf buf){
 		super.toBytes(buf);
-		ByteBufUtils.writeItemStack(buf, partStack);
+		ByteBufUtils.writeUTF8String(buf, this.partPackID);
+		ByteBufUtils.writeUTF8String(buf, this.partName);
+		ByteBufUtils.writeTag(buf, this.partTag);
 	}
 
 	public static class Handler implements IMessageHandler<PacketVehicleClientPartAddition, IMessage>{
@@ -49,15 +54,13 @@ public class PacketVehicleClientPartAddition extends APacketVehiclePart{
 					EntityVehicleA_Base vehicle = (EntityVehicleA_Base) getVehicle(message, ctx);
 					if(vehicle != null){
 						PackPart packPart = vehicle.getPackDefForLocation(message.offsetX, message.offsetY, message.offsetZ);
-						String partName = ((AItemPart) message.partStack.getItem()).partName;
+						PackComponentPart packComponent = PackLoader.getPartComponentByName(message.partPackID, message.partName);
 						try{
-							Class<? extends APart> partClass = PackParserSystem.getPartPartClass(partName);
-							Constructor<? extends APart> construct = partClass.getConstructor(EntityVehicleE_Powered.class, PackPart.class, String.class, NBTTagCompound.class);
-							APart newPart = construct.newInstance((EntityVehicleE_Powered) vehicle, packPart, partName, message.partStack.hasTagCompound() ? message.partStack.getTagCompound() : new NBTTagCompound());
+							APart newPart = packComponent.createPart((EntityVehicleE_Powered) vehicle, packComponent, packPart, message.partTag);
 							vehicle.addPart(newPart, false);
 						}catch(Exception e){
-							MTS.MTSLog.error("ERROR SPAWING PART ON CLIENT!");
-							MTS.MTSLog.error(e.getMessage());
+							FileInterface.logError("ERROR SPAWING PART ON CLIENT!");
+							FileInterface.logError(e.getMessage());
 						}
 					}
 				}

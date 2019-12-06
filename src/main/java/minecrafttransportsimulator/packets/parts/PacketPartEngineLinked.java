@@ -21,9 +21,9 @@ public class PacketPartEngineLinked extends APacketPart{
 	public PacketPartEngineLinked(APartEngine engine, APartEngine engineLinked){
 		super(engine);
 		this.linkedId = engineLinked.vehicle.getEntityId();
-		this.linkedX = engineLinked.offset.x;
-		this.linkedY = engineLinked.offset.y;
-		this.linkedZ = engineLinked.offset.z;
+		this.linkedX = engineLinked.baseOffset.x;
+		this.linkedY = engineLinked.baseOffset.y;
+		this.linkedZ = engineLinked.baseOffset.z;
 	}
 	
 	@Override
@@ -54,8 +54,8 @@ public class PacketPartEngineLinked extends APacketPart{
 					EntityVehicleA_Base linkedVehicle = (EntityVehicleA_Base) Minecraft.getMinecraft().world.getEntityByID(message.linkedId);
 					APartEngine linkedEngine = null;
 					if(linkedVehicle != null){
-						for(APart part : linkedVehicle.getVehicleParts()){
-							if(part.offset.x == message.linkedX && part.offset.y == message.linkedY && part.offset.z == message.linkedZ){
+						for(APart part : linkedVehicle.parts){
+							if(part.baseOffset.x == message.linkedX && part.baseOffset.y == message.linkedY && part.baseOffset.z == message.linkedZ){
 								linkedEngine = (APartEngine) part;
 							}
 						}

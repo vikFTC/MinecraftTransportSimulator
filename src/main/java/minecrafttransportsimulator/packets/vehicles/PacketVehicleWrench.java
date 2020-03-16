@@ -5,7 +5,7 @@ import minecrafttransportsimulator.guis.instances.GUIVehicleEditor;
 import minecrafttransportsimulator.systems.ConfigSystem;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import minecrafttransportsimulator.wrappers.WrapperGUI;
-import net.minecraft.entity.player.EntityPlayer;
+import minecrafttransportsimulator.wrappers.WrapperPlayer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -15,7 +15,7 @@ public class PacketVehicleWrench extends APacketVehiclePlayer{
 	
 	public PacketVehicleWrench(){}
 	
-	public PacketVehicleWrench(EntityVehicleE_Powered vehicle, EntityPlayer player){
+	public PacketVehicleWrench(EntityVehicleE_Powered vehicle, WrapperPlayer player){
 		super(vehicle, player);
 	}
 
@@ -26,11 +26,11 @@ public class PacketVehicleWrench extends APacketVehiclePlayer{
 				@Override
 				public void run(){
 					EntityVehicleE_Powered vehicle = getVehicle(message, ctx);
-					EntityPlayer player = getPlayer(message, ctx);
+					WrapperPlayer player = getPlayer(message, ctx);
 					
 					if(vehicle != null && player != null){
 						if(ConfigSystem.configObject.client.devMode.value && vehicle.world.isRemote){
-							if(vehicle.equals(player.getRidingEntity())){
+							if(player.isRidingVehicle(vehicle)){
 								WrapperGUI.openGUI(new GUIVehicleEditor(vehicle));
 								return;
 							}

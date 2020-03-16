@@ -19,10 +19,6 @@ import minecrafttransportsimulator.blocks.pole.BlockPoleNormal;
 import minecrafttransportsimulator.blocks.pole.BlockPoleSign;
 import minecrafttransportsimulator.blocks.pole.BlockPoleWallConnector;
 import minecrafttransportsimulator.guis.GUIPartBench;
-import minecrafttransportsimulator.items.core.ItemJerrycan;
-import minecrafttransportsimulator.items.core.ItemJumperCable;
-import minecrafttransportsimulator.items.core.ItemKey;
-import minecrafttransportsimulator.items.core.ItemWrench;
 import minecrafttransportsimulator.items.packs.AItemPack;
 import minecrafttransportsimulator.items.packs.ItemBooklet;
 import minecrafttransportsimulator.jsondefs.AJSONItem;
@@ -131,12 +127,6 @@ public final class MTSRegistry{
 	//Booklets for manuals.  Not made final as they are created dynamically at runtime.
 	public static Item handbook_en;
 	public static Item handbook_ru;
-	
-	//Vehicle interaction items.
-	public static final Item wrench = new ItemWrench().setCreativeTab(coreTab);
-	public static final Item key = new ItemKey().setCreativeTab(coreTab);
-	public static final Item jumperCable = new ItemJumperCable().setCreativeTab(coreTab);
-	public static final Item jerrycan = new ItemJerrycan().setCreativeTab(coreTab);
 	
 	//Crafting benches.
 	public static final Block vehicleBench = new BlockBench(JSONVehicle.class);

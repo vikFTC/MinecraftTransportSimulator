@@ -24,8 +24,8 @@ import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleF_Air;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleF_Ground;
 import minecrafttransportsimulator.wrappers.WrapperGUI;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
+import minecrafttransportsimulator.wrappers.WrapperItemStack;
+import minecrafttransportsimulator.wrappers.WrapperPlayer;
 import net.minecraftforge.fml.common.Loader;
 
 /**A GUI that is used to put instruments into vehicles.  This GUI is essentially an overlay
@@ -40,7 +40,7 @@ public class GUIInstruments extends AGUIBase{
 	
 	//GUIs components created at opening.
 	private final EntityVehicleE_Powered vehicle;
-	private final EntityPlayer player;
+	private final WrapperPlayer player;
 	private final GUIHUD hudGUI;
 	private final AGUIPanel<? extends EntityVehicleE_Powered> panelGUI;
 	private final TreeMap<String, List<ItemInstrument>> playerInstruments = new TreeMap<String, List<ItemInstrument>>();
@@ -63,7 +63,7 @@ public class GUIInstruments extends AGUIBase{
 	private final List<TexturelessButton> vehicleInstrumentSlots = new ArrayList<TexturelessButton>();
 	private final List<GUIComponentInstrument> vehicleInstruments = new ArrayList<GUIComponentInstrument>();
 	
-	public GUIInstruments(EntityVehicleE_Powered vehicle, EntityPlayer player){
+	public GUIInstruments(EntityVehicleE_Powered vehicle, WrapperPlayer player){
 		this.vehicle = vehicle;
 		this.player = player;
 		this.hudGUI = new GUIHUD(vehicle);
@@ -71,11 +71,10 @@ public class GUIInstruments extends AGUIBase{
 		
 		//Add all packs that have instruments in them.
 		//This depends on if the player has the instruments, or if they are in creative.
-		boolean isPlayerCreative = player.capabilities.isCreativeMode;
 		for(String packID : MTSRegistry.packItemMap.keySet()){
 			for(AItemPack<? extends AJSONItem<?>> packItem : MTSRegistry.packItemMap.get(packID).values()){
 				if(packItem instanceof ItemInstrument){
-					if(isPlayerCreative || player.inventory.hasItemStack(new ItemStack(packItem))){
+					if(player.isCreative() || player.hasItem(new WrapperItemStack(packItem), 1)){
 						//Player has this instrument, but can it go on this vehicle?
 						if(((ItemInstrument) packItem).definition.general.validVehicles.contains(vehicle.definition.general.type)){
 							//Add the instrument to the list of instruments the player has.

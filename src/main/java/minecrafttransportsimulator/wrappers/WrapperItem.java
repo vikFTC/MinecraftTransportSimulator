@@ -1,71 +1,91 @@
 package minecrafttransportsimulator.wrappers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
-import minecrafttransportsimulator.items.core.AItemBase;
+import minecrafttransportsimulator.dataclasses.MTSRegistry;
+import minecrafttransportsimulator.items.components.AItemBase;
+import minecrafttransportsimulator.items.components.IItemCustomNameable;
+import minecrafttransportsimulator.items.components.IItemTooltipLines;
+import minecrafttransportsimulator.items.instances.ItemJerrycan;
+import minecrafttransportsimulator.items.instances.ItemJumperCable;
+import minecrafttransportsimulator.items.instances.ItemKey;
+import minecrafttransportsimulator.items.instances.ItemWrench;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-/**Wrapper for MC GUI classes.  Constructor takes a type of {@link AItemBase}, but
- * is only visible when calling {@link #createItem(AItemBase)}.  This will automatically
- * construct the wrapper and will return the created instance of the item (not wrapper)
- * for use in the code.  The wrapper instance is cached and saved to be registered
- * in the MC systems.  When interfacing with MC systems use this class, but when
- * doing code in MTS use the item, NOT the wrapper!
+/**Wrapper for the MC Item class.  Used to wrap MC type items into a class that we can
+ * use a static set of methods on.  This wrapper also creates all items to be used
+ * by MTS via events, which has the nice effect of putting ALL item-specific code
+ * in this class.  Note that the constructor is private, as all items will be
+ * created via the registry event and thus nothing new will need to go through
+ * this class.  For a wrapper that can take ItemStacks that all the MC methods
+ * spit out, see {@link WrapperItemStack}.
  *
  * @author don_bruce
  */
-public class WrapperItem extends Item{	
-	
+@Mod.EventBusSubscriber
+public class WrapperItem extends Item{
 	private final AItemBase item;
 	
-	private WrapperItem(AItemBase item, boolean isStackable){
+	private WrapperItem(AItemBase item){
 		super();
 		this.item = item;
-		setFull3D();
-		if(!isStackable){
-			this.setMaxStackSize(1);
-		}
 	}
 	
 	/**
 	 *  This is called by the main MC system to get the displayName for the item.
-	 *  Normally this is a translated version of the unlocalized name, but we
-	 *  allow for use of the wrapper to decide what name we translate.
+	 *  Normally this is a translated version of the unlocalized name, but this gets
+	 *  overridden for items that implement {@link IItemCustomNameable}.
 	 */
 	@Override
 	public String getItemStackDisplayName(ItemStack stack){
-        return item.getItemName();
+        return item instanceof IItemCustomNameable ? ((IItemCustomNameable) item).getItemName() : super.getItemStackDisplayName(stack);
 	}
 	
 	/**
 	 *  This is called by the main MC system to add tooltip lines to the item.
 	 *  The ItemStack is passed-in here as it contains NBT data that may be used
-	 *  to change the display of the tooltip.  We convert the NBT into wrapper form
-	 *  to prevent excess odd calls and allow for a more raw serialization system.
-	 *  Also prevents us from using a MC class with a changing name. 
+	 *  to change the display of the tooltip.  Normally we don't add lines, but
+	 *  we can if the item implements {@link IItemTooltipLines}. 
 	 */
 	@Override
 	public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltipLines, ITooltipFlag flagIn){
-		item.addTooltipLines(tooltipLines, stack.getTagCompound());
+		if(item instanceof IItemTooltipLines){
+			((IItemTooltipLines) item).addTooltipLines(tooltipLines, stack.getTagCompound());
+		}
 	}
 	
-	
-	//--------------------START OF INSTANCE HELPER METHODS--------------------	
-
-
-	
-	//--------------------START OF STATIC HELPER METHODS--------------------
 	/**
-	 *  Creates a wrapper for the the passed-in Item, saving the wrapper to be registered later.
-	 *  This wrapper instance will interact with all MC code via passthrough of the item's methods.
-	 *  Returns the passed-in item for constructor convenience.
+	 * Creates and registers all items for the core mod.  This is done when Forge
+	 * fires the event and ensures that all items are in their list in the registry.
 	 */
-	public static void registerItem(AItemBase item){
-		//TODO save item in a list here for registration.
+	@SubscribeEvent
+	public static void on(RegistryEvent.Register<Item> event){
+		final List<AItemBase> itemsToRegister = new ArrayList<AItemBase>();
+		itemsToRegister.add(new ItemJerrycan());
+		itemsToRegister.add(new ItemJumperCable());
+		itemsToRegister.add(new ItemKey());
+		itemsToRegister.add(new ItemWrench());
+		
+		for(AItemBase item : itemsToRegister){
+			WrapperItem wrapper = new WrapperItem(item);
+			wrapper.setFull3D();
+			wrapper.setCreativeTab(MTSRegistry.coreTab);
+			if(!item.isStackable()){
+				wrapper.setMaxStackSize(1);
+			}
+			
+			String name = wrapper.item.getClass().getName().substring("Item".length()).toLowerCase();
+			event.getRegistry().register(wrapper.setRegistryName(name).setUnlocalizedName(name));
+			MTSRegistry.coreItems.add(wrapper);
+		}
 	}
 }

@@ -5,8 +5,8 @@ import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.dataclasses.MTSRegistry;
 import minecrafttransportsimulator.items.packs.ItemInstrument;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
+import minecrafttransportsimulator.wrappers.WrapperItemStack;
+import minecrafttransportsimulator.wrappers.WrapperPlayer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -20,7 +20,7 @@ public class PacketVehicleInstruments extends APacketVehiclePlayer{
 
 	public PacketVehicleInstruments(){}
 	
-	public PacketVehicleInstruments(EntityVehicleE_Powered vehicle, EntityPlayer player, byte slot, ItemInstrument instrument){
+	public PacketVehicleInstruments(EntityVehicleE_Powered vehicle, WrapperPlayer player, byte slot, ItemInstrument instrument){
 		super(vehicle, player);
 		this.slot = slot;
 		if(instrument != null){
@@ -54,12 +54,12 @@ public class PacketVehicleInstruments extends APacketVehiclePlayer{
 				@Override
 				public void run(){
 					EntityVehicleE_Powered vehicle = (EntityVehicleE_Powered) getVehicle(message, ctx);
-					EntityPlayer player = getPlayer(message, ctx);
+					WrapperPlayer player = getPlayer(message, ctx);
 					
 					if(vehicle != null && player != null){
 						//Check to make sure the instrument can fit in survival player's inventories.
-						if(!player.capabilities.isCreativeMode && ctx.side.isServer() && vehicle.instruments.containsKey(message.slot)){
-							if(!player.inventory.addItemStackToInventory(new ItemStack(vehicle.instruments.get(message.slot)))){
+						if(!player.isCreative() && ctx.side.isServer() && vehicle.instruments.containsKey(message.slot)){
+							if(!player.addItem(new WrapperItemStack(vehicle.instruments.get(message.slot)))){
 								return;
 							}
 						}
@@ -71,9 +71,10 @@ public class PacketVehicleInstruments extends APacketVehiclePlayer{
 						}else{
 							//Check to make sure player has the instrument they are trying to put in.
 							ItemInstrument instrument = (ItemInstrument) MTSRegistry.packItemMap.get(message.instrumentPackID).get(message.instrumentSystemName);
-							if(!player.capabilities.isCreativeMode && ctx.side.isServer() && instrument != null){
-								if(player.inventory.hasItemStack(new ItemStack(instrument))){
-									player.inventory.clearMatchingItems(instrument, -1, 1, null);
+							if(!player.isCreative() && ctx.side.isServer() && instrument != null){
+								WrapperItemStack stack = new WrapperItemStack(instrument);
+								if(player.hasItem(stack)){
+									player.removeItem(stack);
 								}else{
 									return;
 								}

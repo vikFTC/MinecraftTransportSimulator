@@ -2,37 +2,38 @@ package minecrafttransportsimulator.packets.vehicles;
 
 import io.netty.buffer.ByteBuf;
 import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
+import minecrafttransportsimulator.wrappers.WrapperPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public abstract class APacketVehiclePlayer extends APacketVehicle{
-	private int player;
+	private int playerID;
 
 	public APacketVehiclePlayer(){}
 	
-	public APacketVehiclePlayer(EntityVehicleE_Powered vehicle, EntityPlayer player){
+	public APacketVehiclePlayer(EntityVehicleE_Powered vehicle, WrapperPlayer player){
 		super(vehicle);
-		this.player = player.getEntityId();
+		this.playerID = player.getID();
 	}
 	
 	@Override
 	public void fromBytes(ByteBuf buf){
 		super.fromBytes(buf);
-		this.player = buf.readInt();
+		this.playerID = buf.readInt();
 	}
 
 	@Override
 	public void toBytes(ByteBuf buf){
 		super.toBytes(buf);
-		buf.writeInt(this.player);
+		buf.writeInt(this.playerID);
 	}
 	
-	protected static EntityPlayer getPlayer(APacketVehiclePlayer message, MessageContext ctx){
+	protected static WrapperPlayer getPlayer(APacketVehiclePlayer message, MessageContext ctx){
 		if(ctx.side.isServer()){
-			return (EntityPlayer) ctx.getServerHandler().player.world.getEntityByID(message.player);
+			return new WrapperPlayer((EntityPlayer) ctx.getServerHandler().player.world.getEntityByID(message.playerID));
 		}else{
-			return (EntityPlayer) Minecraft.getMinecraft().world.getEntityByID(message.player);
+			return new WrapperPlayer((EntityPlayer) Minecraft.getMinecraft().world.getEntityByID(message.playerID));
 		}
 	}
 }

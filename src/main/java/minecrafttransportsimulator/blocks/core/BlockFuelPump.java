@@ -12,6 +12,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -47,7 +48,7 @@ public class BlockFuelPump extends ABlockRotatable implements ITileEntityProvide
 						}
 					}
 					return true;
-				}else if(stack.getItem().equals(MTSRegistry.jerrycan)){
+				}else if(stack.getItem().equals(Item.getByNameOrId("mts:jerrycan"))){
 					if(!stack.hasTagCompound() || !stack.getTagCompound().getBoolean("isFull")){
 						if(pump.getFluid() != null && pump.getFluidAmount() >= 1000){
 							NBTTagCompound stackTag = new NBTTagCompound();

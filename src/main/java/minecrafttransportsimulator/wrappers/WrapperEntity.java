@@ -11,7 +11,8 @@ import net.minecraft.entity.Entity;
  * @author don_bruce
  */
 public class WrapperEntity{
-	private final Entity entity;
+	//TODO make this private when we can use wrappers everywhere.
+	public final Entity entity;
 	
 	public WrapperEntity(Entity entity){
 		this.entity = entity;
@@ -48,6 +49,13 @@ public class WrapperEntity{
 	 */
 	public boolean isRidingVehicle(EntityVehicleE_Powered vehicle){
 		return vehicle.equals(entity.getRidingEntity());
+	}
+	
+	/**
+	 *  Tells the entity to start riding the passed-in vehicle.
+	 */
+	public void setRiding(EntityVehicleE_Powered vehicle){
+		entity.startRiding(vehicle);
 	}
 	
 	/**

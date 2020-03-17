@@ -19,6 +19,7 @@ import minecrafttransportsimulator.vehicles.main.EntityVehicleE_Powered;
 import minecrafttransportsimulator.vehicles.parts.PartSeat;
 import minecrafttransportsimulator.wrappers.WrapperGUI;
 import minecrafttransportsimulator.wrappers.WrapperInput;
+import minecrafttransportsimulator.wrappers.WrapperPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.client.renderer.entity.RenderPlayer;
@@ -68,15 +69,15 @@ public final class ClientEventSystem{
     		//Check to see what we clicked, and fire the appropriate packet.
     		VehicleAxisAlignedBB boxClicked = vehicle.getEntityBoundingBox().lastBoxRayTraced;
     		if(vehicle.collisionBoxes.contains(boxClicked)){
-    			MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, event.getEntityPlayer(), boxClicked.rel.x, boxClicked.rel.y, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.COLLISION_RIGHTCLICK));
+    			MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, new WrapperPlayer(event.getEntityPlayer()), boxClicked.rel.x, boxClicked.rel.y, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.COLLISION_RIGHTCLICK));
     		}else if(vehicle.partBoxes.contains(boxClicked)){
-    			MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, event.getEntityPlayer(), boxClicked.rel.x, boxClicked.rel.y, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.PART_RIGHTCLICK));
+    			MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, new WrapperPlayer(event.getEntityPlayer()), boxClicked.rel.x, boxClicked.rel.y, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.PART_RIGHTCLICK));
     		}else if(vehicle.openPartSpotBoxes.contains(boxClicked)){
     			//If the player is not holding a custom part, then we need to offset the box as it's in the wrong spot.
     			if(event.getEntityPlayer().getHeldItemMainhand().getItem() instanceof ItemPartCustom){
-    				MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, event.getEntityPlayer(), boxClicked.rel.x, boxClicked.rel.y, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.PART_SLOT_RIGHTCLICK));
+    				MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, new WrapperPlayer(event.getEntityPlayer()), boxClicked.rel.x, boxClicked.rel.y, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.PART_SLOT_RIGHTCLICK));
     			}else{
-    				MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, event.getEntityPlayer(), boxClicked.rel.x, boxClicked.rel.y - 0.5D, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.PART_SLOT_RIGHTCLICK));
+    				MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, new WrapperPlayer(event.getEntityPlayer()), boxClicked.rel.x, boxClicked.rel.y - 0.5D, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.PART_SLOT_RIGHTCLICK));
     			}
     		}else{
     			throw new NullPointerException("ERROR: A vehicle was clicked (interacted) without doing RayTracing first, or AABBs in vehicle are corrupt!");
@@ -110,9 +111,9 @@ public final class ClientEventSystem{
 	    		VehicleAxisAlignedBB boxClicked = vehicle.getEntityBoundingBox().lastBoxRayTraced;
 	    		if(!vehicle.openPartSpotBoxes.contains(boxClicked)){
 	    			if(vehicle.collisionBoxes.contains(boxClicked)){
-	        			MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, event.getEntityPlayer(), boxClicked.rel.x, boxClicked.rel.y, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.COLLISION_LEFTCLICK));
+	        			MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, new WrapperPlayer(event.getEntityPlayer()), boxClicked.rel.x, boxClicked.rel.y, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.COLLISION_LEFTCLICK));
 	        		}else if(vehicle.partBoxes.contains(boxClicked)){
-	        			MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, event.getEntityPlayer(), boxClicked.rel.x, boxClicked.rel.y, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.PART_LEFTCLICK));
+	        			MTS.MTSNet.sendToServer(new PacketVehicleInteract(vehicle, new WrapperPlayer(event.getEntityPlayer()), boxClicked.rel.x, boxClicked.rel.y, boxClicked.rel.z, PacketVehicleInteract.PacketVehicleInteractType.PART_LEFTCLICK));
 	        		}else{
 	        			throw new NullPointerException("ERROR: A vehicle was clicked (attacked) without doing RayTracing first, or AABBs in vehicle are corrupt!");
 	        		}

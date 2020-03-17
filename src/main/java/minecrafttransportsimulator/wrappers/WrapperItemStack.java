@@ -15,14 +15,20 @@ import net.minecraft.nbt.NBTTagCompound;
  * @author don_bruce
  */
 public class WrapperItemStack{
-	private final ItemStack stack;
+	//TODO make this private when we can use wrappers everywhere.
+	public final ItemStack stack;
 	
 	public WrapperItemStack(ItemStack stack){
 		this.stack = stack;
 	}
 	
+	public WrapperItemStack(WrapperItemStack wrapper, int qty){
+		this.stack = new ItemStack(wrapper.stack.getItem(), qty, wrapper.getMetadata());
+		this.stack.setTagCompound(wrapper.stack.getTagCompound());
+	}
+	
 	public WrapperItemStack(Item item){
-		this(item, 0, 0);
+		this(item, 1, 0);
 	}
 	
 	public WrapperItemStack(String itemName, int stackQty, int stackMeta){
@@ -42,6 +48,7 @@ public class WrapperItemStack{
 	
 	/**
 	 *  Returns the stack for this wrapper.
+	 *  Required for some MC interfaces, so package-private.
 	 */
 	ItemStack getStack(){
         return stack;
@@ -49,6 +56,7 @@ public class WrapperItemStack{
 	
 	/**
 	 *  Returns the item of the stack.
+	 *  Required for some MC interfaces, so package-private.
 	 */
 	Item getItem(){
         return stack.getItem();
@@ -57,7 +65,7 @@ public class WrapperItemStack{
 	/**
 	 *  Returns the qty of items in the stack.
 	 */
-	int getQty(){
+	public int getQty(){
         return stack.getCount();
 	}
 	
@@ -65,8 +73,17 @@ public class WrapperItemStack{
 	 *  Returns the metadata of the stack.
 	 *  Note that this defaults to 0 in later MC releases.
 	 */
-	int getMetadata(){
+	public int getMetadata(){
         return stack.getMetadata();
+	}
+	
+	/**
+	 *  Returns the current display text of this item.
+	 *  This will either be the translated name for the item,
+	 *  or the display name override set in the NBT.
+	 */
+	public String getDisplayText(){
+        return stack.getDisplayName();
 	}
 	
 	/**
@@ -78,5 +95,14 @@ public class WrapperItemStack{
 			stack.setTagCompound(new NBTTagCompound());
 		}
         return new WrapperNBT(stack.getTagCompound());
+	}
+	
+	/**
+	 *  Returns the actual NBT data of the stack.
+	 *  Required for interfacing with MC functions, so
+	 *  package-private to only work with wrappers.
+	 */
+	NBTTagCompound getActualNBT(){
+		return stack.getTagCompound();
 	}
 }

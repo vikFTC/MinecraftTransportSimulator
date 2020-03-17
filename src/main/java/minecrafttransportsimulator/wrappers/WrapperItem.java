@@ -33,7 +33,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
  */
 @Mod.EventBusSubscriber
 public class WrapperItem extends Item{
-	private final AItemBase item;
+	final AItemBase item;
 	
 	private WrapperItem(AItemBase item){
 		super();
@@ -59,7 +59,7 @@ public class WrapperItem extends Item{
 	@Override
 	public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltipLines, ITooltipFlag flagIn){
 		if(item instanceof IItemTooltipLines){
-			((IItemTooltipLines) item).addTooltipLines(tooltipLines, stack.getTagCompound());
+			((IItemTooltipLines) item).addTooltipLines(tooltipLines, new WrapperNBT(stack.getTagCompound()));
 		}
 	}
 	

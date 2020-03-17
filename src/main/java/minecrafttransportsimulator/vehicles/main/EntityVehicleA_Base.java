@@ -19,6 +19,7 @@ import minecrafttransportsimulator.packets.vehicles.PacketVehicleClientPartAddit
 import minecrafttransportsimulator.packets.vehicles.PacketVehicleClientPartRemoval;
 import minecrafttransportsimulator.systems.PackParserSystem;
 import minecrafttransportsimulator.vehicles.parts.APart;
+import minecrafttransportsimulator.wrappers.WrapperItemStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
@@ -91,7 +92,7 @@ abstract class EntityVehicleA_Base extends Entity{
 	 * if all operations completed, false if the part was not able to be added.
 	 * Note that the passed-in data MAY be null if the item didn't have any.
 	 */
-    public boolean addPartFromItem(AItemPart partItem, NBTTagCompound partTag, double xPos, double yPos, double zPos){
+    public boolean addPartFromItem(WrapperItemStack stack, double xPos, double yPos, double zPos){
     	for(Entry<Vec3d, VehiclePart> packPartEntry : getAllPossiblePackParts().entrySet()){
     		//Check to see if this is the part we want to add.
     		if(packPartEntry.getKey().x == xPos && packPartEntry.getKey().y == yPos && packPartEntry.getKey().z == zPos){
@@ -102,7 +103,7 @@ abstract class EntityVehicleA_Base extends Entity{
 						//Check to make sure the part is in parameter ranges.
 						if(partItem.isPartValidForPackDef(packPartEntry.getValue())){
 							//Part is valid.  Create it and add it.
-							addPart(PackParserSystem.createPart((EntityVehicleE_Powered) this, packPartEntry.getValue(), partItem.definition, partTag != null ? partTag : new NBTTagCompound()), false);
+							addPart(PackParserSystem.createPart((EntityVehicleE_Powered) this, packPartEntry.getValue(), partItem.definition, stack.stack.hasTagCompound() ? stack.stack.getTagCompound() : new NBTTagCompound()), false);
 							MTS.MTSNet.sendToAll(new PacketVehicleClientPartAddition((EntityVehicleE_Powered) this, xPos, yPos, zPos, partItem, partTag));
 							return true;
 						}

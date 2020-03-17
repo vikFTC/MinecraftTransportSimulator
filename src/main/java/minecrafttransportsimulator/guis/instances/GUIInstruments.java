@@ -74,7 +74,7 @@ public class GUIInstruments extends AGUIBase{
 		for(String packID : MTSRegistry.packItemMap.keySet()){
 			for(AItemPack<? extends AJSONItem<?>> packItem : MTSRegistry.packItemMap.get(packID).values()){
 				if(packItem instanceof ItemInstrument){
-					if(player.isCreative() || player.hasItem(new WrapperItemStack(packItem), 1)){
+					if(player.isCreative() || player.hasItem(new WrapperItemStack(packItem))){
 						//Player has this instrument, but can it go on this vehicle?
 						if(((ItemInstrument) packItem).definition.general.validVehicles.contains(vehicle.definition.general.type)){
 							//Add the instrument to the list of instruments the player has.

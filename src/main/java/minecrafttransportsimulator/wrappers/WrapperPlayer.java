@@ -4,6 +4,7 @@ import minecrafttransportsimulator.MTS;
 import minecrafttransportsimulator.items.components.AItemBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
@@ -15,7 +16,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
  * @author don_bruce
  */
 public class WrapperPlayer extends WrapperEntity{
-	private final EntityPlayer player;
+	//TODO make this private when we can use wrappers everywhere.
+	public final EntityPlayer player;
 	
 	public WrapperPlayer(EntityPlayer player){
 		super(player);
@@ -53,16 +55,51 @@ public class WrapperPlayer extends WrapperEntity{
 	}
 	
 	/**
-	 *  Returns true if the player is holding the passed-in item.
-	 *  Assumes main-hand for all cases.
+	 *  Returns true if the item the player is holding is an instance of the
+	 *  passed-in class.  Assumes main-hand for all cases.  If this item is
+	 *  an instance of {@link WrapperItem}, then the test is done on the item
+	 *  contained in the wrapper, not the wrapper itself.
 	 */
-	public boolean isHoldingItem(Class<? extends AItemBase> itemClass){
-		return player.getHeldItemMainhand().getItem().getClass().isInstance(itemClass);
+	public boolean isHoldingItem(Class<?> itemClass){
+		return player.getHeldItemMainhand().getItem() instanceof WrapperItem ? ((WrapperItem) player.getHeldItemMainhand().getItem()).item.getClass().isInstance(itemClass) : player.getHeldItemMainhand().getItem().getClass().isInstance(itemClass);
+	}
+	
+	/**
+	 *  Returns true if the player is holding the passed-in item.
+	 *  Assumes main-hand for all cases.  This method allows
+	 *  for string-based checking rather than class-based.
+	 */
+	public boolean isHoldingItem(String itemName){
+		return player.getHeldItemMainhand().getItem().equals(Item.getByNameOrId(itemName));
+	}
+	
+	/**
+	 *  Returns the held stack as an instance of {@link WrapperItemStack}.
+	 */
+	public WrapperItemStack getHeldStack(){
+		return new WrapperItemStack(player.getHeldItemMainhand());
+	}
+	
+	/**
+	 *  Returns the held MTS item  as an instance of {@link AItemBase},
+	 *  or null if the player isn't holding a MTS Item.
+	 */
+	public AItemBase getHeldMTSItem(){
+		return player.getHeldItemMainhand().getItem() instanceof WrapperItem ? ((WrapperItem) player.getHeldItemMainhand().getItem()).item : null;
+	}
+	
+	/**
+	 *  Returns the held item for this wrapper.  This method is only here
+	 *  to prevent the need to re-do part code to work with part items.  That
+	 *  will come in a later release once packs don't need compilation.
+	 */
+	public Item getHeldItem(){
+		return player.getHeldItemMainhand().getItem();
 	}
 	
 	/**
 	 *  Returns true if the player has the quantity of the passed-in item in their inventory.
-	 *  Note that the stack size defined the qty to find, and may well exceed 64 to find more
+	 *  Note that the stack size defines the qty to find, and may well exceed 64 to find more
 	 *  than 64 items.
 	 */
 	public boolean hasItem(WrapperItemStack stackToFind){
@@ -79,7 +116,7 @@ public class WrapperPlayer extends WrapperEntity{
 	}
 	
 	/**
-	 *  Attempts to add the passed-in item to the player's inventory.
+	 *  Attempts to add the passed-in item(s) to the player's inventory.
 	 *  Returns true if addition was successful.
 	 */
 	public boolean addItem(WrapperItemStack stackToAdd){
@@ -95,7 +132,7 @@ public class WrapperPlayer extends WrapperEntity{
 		if(isCreative()){
 			return true;
 		}else{
-			return stackToRemove.getQty() == player.inventory.clearMatchingItems(stackToRemove.getItem(), stackToRemove.getMetadata(), stackToRemove.getQty(), null);
+			return stackToRemove.getQty() == player.inventory.clearMatchingItems(stackToRemove.getItem(), stackToRemove.getMetadata(), stackToRemove.getQty(), stackToRemove.getActualNBT());
 		}
 	}
 	

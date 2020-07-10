@@ -166,7 +166,7 @@ public final class VehicleAnimationSystem{
 			case("trim_rudder"): return vehicle.rudderTrim/10D;
 			case("vertical_speed"): return vehicle.motionY*vehicle.SPEED_FACTOR*20;
 			case("lift_reserve"): return vehicle.trackAngle*3 + 20;
-			case("slip"): return 75*vehicle.sideVector.dotProduct(vehicle.velocityVector);
+			case("slip"): return 75*vehicle.sideVector.dotProduct(vehicle.normalizedVelocity);
 			case("gear_setpoint"): return vehicle.gearUpCommand ? 1 : 0;
 			case("gear_actual"): return vehicle.gearMovementTime/((double) vehicle.definition.motorized.gearSequenceDuration);
 		}
